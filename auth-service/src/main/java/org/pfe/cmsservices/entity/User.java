@@ -29,7 +29,12 @@ public class User {
     @Column(nullable = false)
     private RoleEnum role;
 
+   /* @Column(name = "department_id")
+    private Long departmentId;*/
+
     @Column(nullable = false)
     private boolean enabled = true;
 
+    @Column
+    private String verificationToken;
 }

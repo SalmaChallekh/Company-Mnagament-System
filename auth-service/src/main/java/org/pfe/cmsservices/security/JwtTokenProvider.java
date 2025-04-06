@@ -1,15 +1,13 @@
 package org.pfe.cmsservices.security;
 
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.JwtException;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.*;
 import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Component;
 
@@ -34,12 +32,10 @@ public class JwtTokenProvider {
     }
 
     public String generateToken(Authentication authentication) {
-        // Extract the user's single role
         String role = authentication.getAuthorities().stream()
                 .findFirst()
-                .map(auth -> auth.getAuthority())
+                .map(GrantedAuthority::getAuthority)
                 .orElse("ROLE_USER");
-
         return Jwts.builder()
                 .setSubject(authentication.getName())
                 .claim("ROLE", role)
@@ -56,8 +52,11 @@ public class JwtTokenProvider {
                     .build()
                     .parseClaimsJws(token);
             return true;
-        } catch (JwtException e) {
-            logger.error("Invalid token: {}", e.getMessage());
+        } catch (ExpiredJwtException ex) {
+            logger.warn("JWT token is expired: {}", ex.getMessage());
+            throw new JwtException("Token is expired");
+        } catch (JwtException | IllegalArgumentException e) {
+            logger.error("Invalid JWT token: {}", e.getMessage());
             throw new JwtException("JWT validation failed");
         }
     }
@@ -70,20 +69,11 @@ public class JwtTokenProvider {
                 .getBody();
 
         String username = claims.getSubject();
-        List<SimpleGrantedAuthority> authorities = getAuthorities(claims);
-
-        return new UsernamePasswordAuthenticationToken(username, null, authorities);
-    }
-
-    private List<SimpleGrantedAuthority> getAuthorities(Claims claims) {
         String role = claims.get("ROLE", String.class);
 
-        if (role == null) {
-            logger.warn("JWT does not contain 'role' claim.");
-            return List.of();
-        }
+        List<SimpleGrantedAuthority> authorities = List.of(new SimpleGrantedAuthority(role));
 
-        return List.of(new SimpleGrantedAuthority(role));
+        return new UsernamePasswordAuthenticationToken(username, null, authorities);
     }
 
     public String resolveToken(HttpServletRequest request) {
