@@ -12,4 +12,3 @@ public class RestClientConfiguration {
         return RestClient.builder();
     }
 }
-

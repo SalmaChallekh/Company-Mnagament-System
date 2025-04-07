@@ -57,9 +57,6 @@ public class AuthController {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid token");
     }*/
 
-
-
-
     @PostMapping("/register")
     public ResponseEntity<?> registerUser(@RequestBody @Valid RegisterRequest registerRequest) {
         try {
@@ -95,59 +92,5 @@ public class AuthController {
         }
     }
 }
-
-/*@RestController
-@RequestMapping("/api/auth")
-public class AuthController {
-
-    private final UserService userService;
-    private final JwtUtil jwtUtil;
-    private final AuthenticationManager authenticationManager;
-    private final CustomUserDetailsService userDetailsService;
-
-    @Autowired
-    public AuthController(UserService userService, JwtUtil jwtUtil,
-                          AuthenticationManager authenticationManager, CustomUserDetailsService userDetailsService) {
-        this.userService = userService;
-        this.jwtUtil = jwtUtil;
-        this.authenticationManager = authenticationManager;
-        this.userDetailsService = userDetailsService;
-    }
-
-    @PostMapping("/register")
-    public ResponseEntity<?> registerUser(@RequestBody @Valid RegisterRequest registerRequest) {
-        try {
-            User user = userService.registerUser(
-                    registerRequest.getUsername(),
-                    registerRequest.getEmail(),
-                    registerRequest.getPassword(),
-                    registerRequest.getRole()
-            );
-            return ResponseEntity.status(HttpStatus.CREATED).body("User registered successfully!");
-        } catch (EntityExistsException ex) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
-        }
-    }
-
-    @PostMapping("/login")
-    public ResponseEntity<?> loginUser(@RequestBody @Valid LoginRequest loginRequest) {
-        try {
-            Authentication authentication = authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(
-                            loginRequest.getUsername(), loginRequest.getPassword())
-            );
-
-            CustomUserDetails customUserDetails = (CustomUserDetails) authentication.getPrincipal();
-            User user = customUserDetails.getUser();
-
-            String token = jwtUtil.generateToken(user.getUsername(), user.getRole());
-            return ResponseEntity.ok(new AuthResponse(token));
-
-        } catch (BadCredentialsException ex) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(new ApiResponse(false, "Invalid username or password"));
-        }
-    }
-}*/
 
 

@@ -1,9 +1,12 @@
 package com.pfe.department_service.dto;
 
+import lombok.Builder;
 import lombok.Data;
 
 @Data
-public class DepartmentRequest {
+@Builder
+public class DepartmentResponse {
+    private Long id;
     private String name;
     private String description;
 }

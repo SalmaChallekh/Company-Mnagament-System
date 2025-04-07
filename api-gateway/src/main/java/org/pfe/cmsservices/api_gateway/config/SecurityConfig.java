@@ -42,7 +42,7 @@ public class SecurityConfig {
                 .authorizeExchange(exchanges -> exchanges
                         //.pathMatchers("/auth/**").permitAll() // Public authentication endpoints
                         .pathMatchers("/api/auth/login", "/api/auth/register", "/api/auth/validateToken").permitAll()
-                        .pathMatchers("/admin/**").hasRole("ADMIN") // For ADMIN only
+                        .pathMatchers("/api/admin/**").hasRole("ADMIN") // For ADMIN only
                         .anyExchange().authenticated() // Require authentication for all else
                 )
                 .oauth2ResourceServer(oauth2 -> oauth2
@@ -52,5 +52,4 @@ public class SecurityConfig {
         return http.build();
     }
 }
-
 
