@@ -42,9 +42,10 @@ public class SecurityConfig {
         http.csrf(csrf -> csrf.disable()) // Disable CSRF as we're using JWT for security
                 .authorizeHttpRequests(auth -> auth
                         // Public endpoints (no token required)
-                        .requestMatchers("/api/auth/login", "/api/auth/register", "/api/auth/validateToken").permitAll()
+                        .requestMatchers("/api/auth/login", "/api/auth/register", "/api/auth/validateToken","/api/auth/activate").permitAll()
                         // Private endpoints (token validation required)
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                        //.requestMatchers("/api/auth/activate").permitAll()
                         .requestMatchers("/api/user/**").hasRole("USER")
                         // Default rule: secured for any other routes
                         .anyRequest().authenticated()

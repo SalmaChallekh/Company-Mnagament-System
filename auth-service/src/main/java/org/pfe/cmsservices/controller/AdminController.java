@@ -1,8 +1,10 @@
 package org.pfe.cmsservices.controller;
 
 import lombok.RequiredArgsConstructor;
-import org.pfe.cmsservices.dto.AdminCreateUserRequest;
+
+import org.pfe.cmsservices.enums.RoleEnum;
 import org.pfe.cmsservices.service.UserService;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -17,18 +19,27 @@ public class AdminController {
     public String adminDashboard() {
         return "Welcome to the Admin Dashboard!";
     }
-    @PostMapping("/create-user")
+    @PostMapping("/create")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<String> createUser(@RequestBody AdminCreateUserRequest request) {
-        userService.createUserByAdmin(request);
-        return ResponseEntity.ok("User created. Verification email sent.");
+    public void createUser(@RequestBody CreateUserRequest request) {
+        userService.createUserProfile(
+                request.email(),
+                request.role(),
+                request.departmentId()
+        );
     }
 
-    @GetMapping("/verify")
-    public ResponseEntity<String> verifyAccount(@RequestParam String token) {
-        userService.verifyAccount(token);
-        return ResponseEntity.ok("Account verified. You can now login.");
+        /*@PostMapping("/activate")
+        public void activateUser(@RequestBody ActivateRequest request) {
+            userService.completeRegistration(request.token(), request.password());
+        }*/
+        /*only for testing*/
+
+
+
+    // Records for requests
+        public record CreateUserRequest(String email, RoleEnum role, Long departmentId) {}
+        public record ActivateRequest(String token, String password) {}
     }
-}
 
 

@@ -13,10 +13,10 @@ import org.pfe.cmsservices.enums.RoleEnum;
 @NoArgsConstructor
 @AllArgsConstructor
 public class RegisterRequest {
-    @NotEmpty(message = "Username is required")
+    //@NotEmpty(message = "Username is required")
     private String username;
 
-    @NotEmpty(message = "Password is required")
+    //@NotEmpty(message = "Password is required")
     private String password;
 
     @NotEmpty(message = "Email is required")

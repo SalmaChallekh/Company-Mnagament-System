@@ -2,11 +2,14 @@ package org.pfe.cmsservices.service;
 
 import com.pfe.department_service.dto.DepartmentRequest;
 import org.pfe.cmsservices.dto.AdminCreateUserRequest;
+import org.pfe.cmsservices.dto.DepartmentResponse;
 import org.pfe.cmsservices.entity.User;
 import org.pfe.cmsservices.enums.RoleEnum;
 import org.pfe.cmsservices.repository.UserRepository;
 import jakarta.persistence.EntityExistsException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -15,24 +18,23 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.transaction.annotation.Transactional;
 
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @Service
 @RequiredArgsConstructor
+
 public class UserService {
 
     private static final Logger logger = LoggerFactory.getLogger(UserService.class);
-
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final EmailService emailService;
     //private final RestTemplate restTemplate; // Inject RestTemplate
-
-    /**
-     * Registers a new user with a username, email, password, and role.
-     */
+    @Value("${department.service.url}")
+    private String departmentServiceUrl;
     public User registerUser(String username, String email, String password, RoleEnum role) {
         if (userRepository.existsByUsername(username)) {
             throw new EntityExistsException("Username already exists.");
@@ -52,83 +54,48 @@ public class UserService {
         return userRepository.save(user);
     }
 
-    /**
-     * Creates a user by admin with a temporary password and sends a verification email.
-     */
-    public void createUserByAdmin(AdminCreateUserRequest request) {
-        if (userRepository.findByEmail(request.getEmail()).isPresent()) {
-            throw new RuntimeException("Email already exists");
-        }
-
-        String tempPassword = UUID.randomUUID().toString().substring(0, 8); // Generate temp password
-        String token = UUID.randomUUID().toString(); // Generate verification token
-
+    // 1. Admin creates profile
+    public void createUserProfile(String email, RoleEnum role, Long deptId) {
         User user = User.builder()
-                .username(request.getUsername())
-                .email(request.getEmail())
-                .role(request.getRole())
-                .enabled(false)
-                .password(passwordEncoder.encode(tempPassword))
-                .verificationToken(token)
+                .email(email)
+                .role(role)
+                .departmentId(deptId)
+                .verificationToken(UUID.randomUUID().toString())
+                 .tokenExpiry(LocalDateTime.now().plusDays(2))
                 .build();
 
         userRepository.save(user);
-
-        // Send verification email
-        emailService.sendVerificationEmail(user.getEmail(), token);
-        logger.info("User created by admin: {}", user.getUsername());
+        emailService.sendActivationEmail(email, user.getVerificationToken());
     }
 
-    /**
-     * Assigns a department to a user, after validating the department ID.
-     */
-    @Transactional
-  /*  public void assignDepartment(Long userId, Long departmentId) {
-        // Call Department Service to validate department exists
-        String url = "http://department-service/departments/" + departmentId;
-        try {
-            restTemplate.getForEntity(url, DepartmentRequest.class); // Ensure department exists
-        } catch (RestClientException e) {
-            logger.error("Department not found with ID: {}", departmentId);
-            throw new RuntimeException("Invalid department ID");
-        }
-
-        User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
-        user.setDepartmentId(departmentId);
-        userRepository.save(user);
-        logger.info("Assigned department ID: {} to user ID: {}", departmentId, userId);
-    }*/
-
-    /**
-     * Verifies a user's account using a verification token.
-     */
-    public void verifyAccount(String token) {
+    // 2. User completes registration
+    /*public void completeRegistration(String token, String password) {
         User user = userRepository.findByVerificationToken(token)
                 .orElseThrow(() -> new RuntimeException("Invalid token"));
 
+        if (user.getTokenExpiry().isBefore(LocalDateTime.now())) {
+            throw new RuntimeException("Token expired");
+        }
+
+        user.setPassword(passwordEncoder.encode(password));
         user.setEnabled(true);
         user.setVerificationToken(null);
         userRepository.save(user);
-        logger.info("Account verified for user: {}", user.getUsername());
+    }*/
+    /*only for testing*/
+    public void completeRegistration(String token, String password) {
+        User user = userRepository.findByVerificationToken(token)
+                .orElseThrow(() -> new RuntimeException("Invalid token"));
+
+        if (user.getTokenExpiry().isBefore(LocalDateTime.now())) {
+            throw new RuntimeException("Token expired");
+        }
+
+        user.setPassword(passwordEncoder.encode(password));
+        user.setEnabled(true);
+        user.setVerificationToken(null); // clear the token
+        user.setTokenExpiry(null); // optionally clear expiry
+        userRepository.save(user);
     }
 
-    /**
-     * Retrieves the currently authenticated user.
-     */
-    public User getCurrentUser() {
-        String username = SecurityContextHolder.getContext().getAuthentication().getName();
-        return userRepository.findByEmail(username)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-    }
-
-    /**
-     * Updates the profile of the currently authenticated user.
-     */
-    public void updateProfile(User updated) {
-        User current = getCurrentUser();
-        current.setUsername(updated.getUsername());
-        // Allow updating password if necessary
-        userRepository.save(current);
-        logger.info("Profile updated for user: {}", current.getUsername());
-    }
 }

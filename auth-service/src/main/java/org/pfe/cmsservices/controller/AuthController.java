@@ -3,6 +3,8 @@ package org.pfe.cmsservices.controller;
 import io.jsonwebtoken.JwtException;
 import jakarta.persistence.EntityExistsException;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import org.pfe.cmsservices.dto.ApiResponse;
 import org.pfe.cmsservices.dto.AuthResponse;
 import org.pfe.cmsservices.dto.LoginRequest;
@@ -40,23 +42,6 @@ public class AuthController {
         this.authenticationManager = authenticationManager;
         this.userDetailsService = userDetailsService;
     }
-    /*public AuthController(JwtTokenProvider jwtTokenProvider) {
-        this.jwtTokenProvider = jwtTokenProvider;
-    }*/
-
-   /* @PostMapping("/validateToken")
-    public ResponseEntity<?> validateToken(@RequestHeader("Authorization") String token) {
-        try {
-            token = token.substring(7); // Remove "Bearer " prefix
-            if (jwtTokenProvider.validateToken(token)) {
-                return ResponseEntity.ok("Token is valid");
-            }
-        } catch (JwtException e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
-        }
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid token");
-    }*/
-
     @PostMapping("/register")
     public ResponseEntity<?> registerUser(@RequestBody @Valid RegisterRequest registerRequest) {
         try {
@@ -71,13 +56,24 @@ public class AuthController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
         }
     }
+    @GetMapping("/activate")
+    public ResponseEntity<String> testActivate(@RequestParam String token) {
+        try {
+            // Call to user service to complete registration with the given token and temp password
+            userService.completeRegistration(token, "Test1234!"); // temp password
+            return ResponseEntity.ok("Activated with temp password!");
+        } catch (Exception e) {
+            // Handle any errors, such as invalid token or other exceptions
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error during activation: " + e.getMessage());
+        }
+    }
 
     @PostMapping("/login")
     public ResponseEntity<?> loginUser(@RequestBody @Valid LoginRequest loginRequest) {
         try {
             Authentication authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(
-                            loginRequest.getUsername(), loginRequest.getPassword())
+                            loginRequest.getEmail(), loginRequest.getPassword())
             );
 
             CustomUserDetails customUserDetails = (CustomUserDetails) authentication.getPrincipal();
@@ -91,6 +87,18 @@ public class AuthController {
                     .body(new ApiResponse(false, "Invalid username or password"));
         }
     }
+    @PostMapping("/complete-registration")
+    public ResponseEntity<?> completeRegistration(
+            @RequestBody @Valid CompleteRegistrationRequest request) {
+
+        userService.completeRegistration(request.token(), request.password());
+        return ResponseEntity.ok("Password set successfully. You can now login.");
+    }
+
+    public record CompleteRegistrationRequest(
+            @NotBlank String token,
+            @NotBlank @Size(min = 8) String password
+    ) {}
 }
 
 

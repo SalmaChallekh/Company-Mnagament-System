@@ -3,6 +3,7 @@ package org.pfe.cmsservices.security;
 import lombok.Getter;
 import org.pfe.cmsservices.entity.User;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
@@ -22,8 +23,8 @@ public class CustomUserDetails implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        // Convert RoleEnum to Spring Security format with a "ROLE_" prefix
-        return List.of(() -> "ROLE_" + user.getRole().name());
+        // Just use the enum value directly
+        return List.of(new SimpleGrantedAuthority(user.getRole().name()));
     }
 
     @Override

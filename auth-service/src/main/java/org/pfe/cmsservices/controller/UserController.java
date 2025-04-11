@@ -13,18 +13,5 @@ import org.springframework.web.bind.annotation.*;
 public class UserController {
     private final UserService userService;
 
-    @GetMapping("/profile")
-    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
-    public ResponseEntity<User> getProfile() {
-        return ResponseEntity.ok(userService.getCurrentUser());
-    }
-
-    @PutMapping("/profile")
-    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
-    public ResponseEntity<String> updateProfile(@RequestBody User user) {
-        userService.updateProfile(user);
-        return ResponseEntity.ok("Profile updated.");
-    }
-
 }
 
