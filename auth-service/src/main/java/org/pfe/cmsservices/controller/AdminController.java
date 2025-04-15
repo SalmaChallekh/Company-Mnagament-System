@@ -29,6 +29,7 @@ public class AdminController {
         );
     }
 
+
         /*@PostMapping("/activate")
         public void activateUser(@RequestBody ActivateRequest request) {
             userService.completeRegistration(request.token(), request.password());

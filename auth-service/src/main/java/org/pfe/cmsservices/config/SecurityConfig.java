@@ -7,13 +7,17 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.client.RestTemplate;
 
 @Configuration
+@EnableWebSecurity
 public class SecurityConfig {
 
     private final JwtTokenProvider jwtTokenProvider;
@@ -38,16 +42,19 @@ public class SecurityConfig {
     }
 
     @Bean
+    public RestTemplate restTemplate() {
+        return new RestTemplate();
+    }
+
+    @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http.csrf(csrf -> csrf.disable()) // Disable CSRF as we're using JWT for security
                 .authorizeHttpRequests(auth -> auth
                         // Public endpoints (no token required)
-                        .requestMatchers("/api/auth/login", "/api/auth/register", "/api/auth/validateToken","/api/auth/activate").permitAll()
+                        .requestMatchers("/api/auth/login", "/api/auth/register", "/api/auth/validateToken", "/api/auth/complete-registration").permitAll()
                         // Private endpoints (token validation required)
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
-                        //.requestMatchers("/api/auth/activate").permitAll()
                         .requestMatchers("/api/user/**").hasRole("USER")
-                        // Default rule: secured for any other routes
                         .anyRequest().authenticated()
                 )
                 // No sessions; API is stateless
@@ -59,4 +66,8 @@ public class SecurityConfig {
         return http.build();
     }
 
+    @Bean
+    public WebSecurityCustomizer webSecurityCustomizer() {
+        return (web) -> web.ignoring().requestMatchers("/api/auth/**"); // Adjust CORS for these paths
+    }
 }
