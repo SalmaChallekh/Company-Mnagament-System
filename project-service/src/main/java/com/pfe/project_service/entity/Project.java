@@ -17,7 +17,10 @@ public class Project {
     private String description;
     private LocalDate startDate;
     private LocalDate endDate;
-    //private ProjectStatus status;
+    private ProjectStatus status;
     private Long ownerId;
     private Long departmentId; // Reference to department-service
+    public enum ProjectStatus {
+        PLANNED, IN_PROGRESS, COMPLETED, ON_HOLD
+    }
 }

@@ -1,21 +1,46 @@
+server:
+  port: 5000
+
 spring:
   application:
     name: api-gateway
   cloud:
     gateway:
+      discovery:
+        locator:
+          enabled: true
+          lower-case-service-id: true
       routes:
-        # Route to Auth Service
         - id: auth-service
-          uri: http://localhost:4001
+          uri: lb://auth-service
           predicates:
             - Path=/api/auth/**
+          filters:
+            - StripPrefix=1
+        - id: department-service
+          uri: lb://department-service
+          predicates:
+            - Path=/api/departments/**
+          filters:
+            - StripPrefix=1
+        - id: project-service
+          uri: lb://project-service
+          predicates:
+            - Path=/api/projects/**
+          filters:
+            - StripPrefix=1
 
-server:
-  port: 4000
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+    fetch-registry: true
+    register-with-eureka: true
+  instance:
+    prefer-ip-address: true
 
-# Security settings (Optional for reference)
-security:
-  enabled: true
-  jwt:
-    secret: your-very-secure-64-character-or-longer-secret-key-keep-this-safe
-    expiration: 3600         # Token expiration duration
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,gateway
