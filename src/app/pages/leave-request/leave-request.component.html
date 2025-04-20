@@ -1,0 +1,97 @@
+<div class="card">
+    <p-toast></p-toast>
+    <p-confirmDialog></p-confirmDialog>
+
+    <p-toolbar>
+        <div class="p-toolbar-group-start">
+            <button pButton pRipple label="New Request" icon="pi pi-plus" class="p-button-success mr-2" (click)="openNew()"></button>
+        </div>
+    </p-toolbar>
+
+    <p-table [value]="leaveRequests()" [paginator]="true" [rows]="10" [showCurrentPageReport]="true"
+        currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries" [rowsPerPageOptions]="[10,25,50]"
+        styleClass="p-datatable-gridlines" [tableStyle]="{ 'min-width': '50rem' }">
+
+        <ng-template pTemplate="header">
+            <tr>
+                <th>Employee</th>
+                <th>Leave Type</th>
+                <th>Dates</th>
+                <th>Days</th>
+                <th>Reason</th>
+                <th>Status</th>
+                <th>Approved By</th>
+                <th>Actions</th>
+            </tr>
+        </ng-template>
+
+        <ng-template pTemplate="body" let-request>
+            <tr>
+                <td>{{request.employeeName}}</td>
+                <td>{{request.leaveType}}</td>
+                <td>{{request.startDate | date}} - {{request.endDate | date}}</td>
+                <td>{{request.daysRequested}}</td>
+                <td>{{request.reason}}</td>
+                <td>
+                    <p-tag [value]="request.status" [severity]="getSeverity(request.status)"></p-tag>
+                </td>
+                <td>{{request.approvedBy || 'N/A'}}</td>
+                <td>
+                    <button pButton pRipple icon="pi pi-pencil" class="p-button-rounded p-button-success mr-2"
+                        (click)="editLeave(request)"></button>
+                    <button pButton pRipple icon="pi pi-trash" class="p-button-rounded p-button-danger"
+                        (click)="deleteLeave(request)"></button>
+                </td>
+            </tr>
+        </ng-template>
+    </p-table>
+</div>
+
+<p-dialog [(visible)]="leaveDialog" [style]="{width: '450px'}" header="Leave Request Details" [modal]="true">
+    <div class="card p-fluid">
+        <form (ngSubmit)="saveLeave()">
+            <div class="p-field">
+                <label for="employeeName">Employee Name</label>
+                <input pInputText id="employeeName" [(ngModel)]="leaveRequest.employeeName" name="employeeName" required />
+            </div>
+
+            <div class="p-field">
+                <label for="leaveType">Leave Type</label>
+                <p-dropdown id="leaveType" [options]="leaveTypes" [(ngModel)]="leaveRequest.leaveType"
+                    name="leaveType" optionLabel="label" optionValue="value"></p-dropdown>
+            </div>
+
+            <div class="p-field">
+                <label for="startDate">Start Date</label>
+                <p-calendar id="startDate" [(ngModel)]="leaveRequest.startDate" name="startDate"
+                    [showIcon]="true" required (onSelect)="calculateDays()"></p-calendar>
+            </div>
+
+            <div class="p-field">
+                <label for="endDate">End Date</label>
+                <p-calendar id="endDate" [(ngModel)]="leaveRequest.endDate" name="endDate"
+                    [showIcon]="true" required (onSelect)="calculateDays()"></p-calendar>
+            </div>
+
+            <div class="p-field">
+                <label for="daysRequested">Days Requested</label>
+                <p-inputNumber id="daysRequested" [(ngModel)]="leaveRequest.daysRequested" name="daysRequested" [readonly]="true"></p-inputNumber>
+            </div>
+
+            <div class="p-field">
+                <label for="reason">Reason</label>
+                <textarea pInputTextarea id="reason" [(ngModel)]="leaveRequest.reason" name="reason" required rows="3"></textarea>
+            </div>
+
+            <div class="p-field" *ngIf="leaveRequest.status === 'APPROVED'">
+                <label for="approvedBy">Approved By</label>
+                <input pInputText id="approvedBy" [(ngModel)]="leaveRequest.approvedBy" name="approvedBy" />
+            </div>
+
+            <div class="p-dialog-footer">
+                <button pButton pRipple type="button" label="Cancel" icon="pi pi-times" class="p-button-text" (click)="leaveDialog = false"></button>
+                <button pButton pRipple type="submit" label="Save" icon="pi pi-check" class="p-button-text"></button>
+            </div>
+        </form>
+    </div>
+</p-dialog>

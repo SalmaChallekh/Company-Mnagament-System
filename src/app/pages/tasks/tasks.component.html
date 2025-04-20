@@ -1,0 +1,99 @@
+<div class="card">
+    <p-toast></p-toast>
+    <p-confirmDialog></p-confirmDialog>
+
+    <p-toolbar>
+        <div class="p-toolbar-group-start">
+            <button pButton pRipple label="New Task" icon="pi pi-plus" class="p-button-success mr-2"
+                (click)="openNew()"></button>
+        </div>
+    </p-toolbar>
+
+    <p-table [value]="tasks()" [paginator]="true" [rows]="10" [showCurrentPageReport]="true"
+        currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries"
+        [rowsPerPageOptions]="[10,25,50]" styleClass="p-datatable-gridlines" [tableStyle]="{ 'min-width': '50rem' }">
+
+        <ng-template pTemplate="header">
+            <tr>
+                <th style="width: 3rem"></th>
+                <th>Title</th>
+                <th>Description</th>
+                <th>Due Date</th>
+                <th>Priority</th>
+                <th>Status</th>
+                <th>Assigned To</th>
+                <th>Actions</th>
+            </tr>
+        </ng-template>
+
+        <ng-template pTemplate="body" let-task>
+            <tr>
+                <td>
+                    <p-checkbox [binary]="true" [ngModel]="task.completed"
+                        (onChange)="toggleTaskCompletion(task)"></p-checkbox>
+                </td>
+                <td>{{task.title}}</td>
+                <td>{{task.description}}</td>
+                <td>{{task.dueDate | date}}</td>
+                <td>{{task.priority}}</td>
+                <td>
+                    <p-tag [value]="task.status" [severity]="getSeverity(task.status)"></p-tag>
+                </td>
+                <td>{{task.assignedTo}}</td>
+                <td>
+                    <button pButton pRipple icon="pi pi-pencil" class="p-button-rounded p-button-success mr-2"
+                        (click)="editTask(task)"></button>
+                    <button pButton pRipple icon="pi pi-trash" class="p-button-rounded p-button-danger"
+                        (click)="deleteTask(task)"></button>
+                </td>
+            </tr>
+        </ng-template>
+    </p-table>
+</div>
+
+<p-dialog [(visible)]="taskDialog" [style]="{width: '450px'}" header="Task Details" [modal]="true">
+    <form *ngIf="task" (ngSubmit)="saveTask()">
+        <div class="p-fluid">
+            <div class="p-field">
+                <label for="title">Title</label>
+                <input pInputText id="title" [(ngModel)]="task.title" name="title" required />
+            </div>
+
+            <div class="p-field">
+                <label for="description">Description</label>
+                <textarea pInputTextarea id="description" [(ngModel)]="task.description" name="description"
+                    rows="3"></textarea>
+            </div>
+
+            <div class="p-field">
+                <label for="dueDate">Due Date</label>
+                <p-calendar id="dueDate" [(ngModel)]="task.dueDate" name="dueDate" [showIcon]="true"
+                    required></p-calendar>
+            </div>
+
+            <div class="p-field">
+                <label for="priority">Priority</label>
+                <p-dropdown id="priority" [options]="priorities" [(ngModel)]="task.priority" name="priority"
+                    optionLabel="label" optionValue="value"></p-dropdown>
+            </div>
+
+            <div class="p-field">
+                <label for="status">Status</label>
+                <p-dropdown id="status" [options]="statuses" [(ngModel)]="task.status" name="status" optionLabel="label"
+                    optionValue="value"></p-dropdown>
+            </div>
+
+            <div class="p-field">
+                <label for="assignedTo">Assigned To</label>
+                <p-dropdown id="assignedTo" [options]="teamMembers" [(ngModel)]="task.assignedTo" name="assignedTo"
+                    [filter]="true" filterBy="label" placeholder="Select Team Member"></p-dropdown>
+            </div>
+        </div>
+
+        <div class="p-dialog-footer">
+            <button pButton pRipple type="button" label="Cancel" icon="pi pi-times" class="p-button-text"
+                (click)="taskDialog = false"></button>
+            <button pButton pRipple type="submit" label="Save" icon="pi pi-check" class="p-button-text"></button>
+        </div>
+    </form>
+</p-dialog>

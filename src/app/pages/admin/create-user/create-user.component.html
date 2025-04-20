@@ -1,4 +1,4 @@
-<!-- <p-card header="Create New User">
+<p-card header="Create New User">
     <form (ngSubmit)="createUser()" #userForm="ngForm">
         <div class="p-fluid formgrid grid">
             <div class="field col-12 md:col-6">
@@ -21,8 +21,9 @@
 
         <button type="submit" pButton label="Create User" [disabled]="!userForm.valid"></button>
     </form>
-</p-card> -->
-<p-toolbar class="mb-4">
+</p-card>
+
+<!-- <p-toolbar class="mb-4">
     <ng-template #start>
         <p-button label="New User" icon="pi pi-user-plus" (onClick)="openNew()" />
         <p-button label="Delete" icon="pi pi-trash" severity="danger" (onClick)="deleteSelectedUsers()" [disabled]="!selectedUsers?.length" />
@@ -58,20 +59,20 @@
 <p-dialog [(visible)]="userDialog" header="User Details" [modal]="true" [style]="{ width: '450px' }">
     <div class="p-fluid">
         <div class="field">
-            <label>Name</label>
-            <input pInputText [(ngModel)]="user.name" required />
+            <label for="name">Name</label>
+            <input pInputText id="name" [(ngModel)]="user.name" required />
         </div>
         <div class="field">
-            <label>Email</label>
-            <input pInputText [(ngModel)]="user.email" required />
+            <label for="email">Email</label>
+            <input pInputText id="email" [(ngModel)]="user.email" required />
         </div>
         <div class="field">
-            <label>Role</label>
-            <p-select [(ngModel)]="user.role" [options]="roles"></p-select>
+            <label for="role">Role</label>
+            <p-select id="role" [(ngModel)]="user.role" [options]="roles"></p-select>
         </div>
         <div class="field">
-            <label>Status</label>
-            <p-select [(ngModel)]="user.status" [options]="statuses"></p-select>
+            <label for="status">Status</label>
+            <p-select id="status" [(ngModel)]="user.status" [options]="statuses"></p-select>
         </div>
     </div>
     <ng-template #footer>
@@ -80,4 +81,4 @@
     </ng-template>
 </p-dialog>
 
-<p-confirmdialog></p-confirmdialog>
+<p-confirmdialog></p-confirmdialog> -->

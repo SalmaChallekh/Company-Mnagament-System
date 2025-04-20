@@ -1,0 +1,109 @@
+<div class="card">
+    <p-toast></p-toast>
+    <p-confirmDialog></p-confirmDialog>
+
+    <p-toolbar>
+        <div class="p-toolbar-group-start">
+            <button pButton pRipple label="New" icon="pi pi-plus" class="p-button-success mr-2" (click)="openNew()"></button>
+        </div>
+    </p-toolbar>
+
+    <p-table [value]="payrolls()" [paginator]="true" [rows]="10" [showCurrentPageReport]="true"
+        currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries" [rowsPerPageOptions]="[10,25,50]"
+        styleClass="p-datatable-gridlines" [tableStyle]="{ 'min-width': '50rem' }" [globalFilterFields]="['employeeName','status']">
+
+        <ng-template pTemplate="header">
+            <tr>
+                <th>Employee</th>
+                <th>Period</th>
+                <th>Basic Salary</th>
+                <th>Allowances</th>
+                <th>Deductions</th>
+                <th>Net Salary</th>
+                <th>Status</th>
+                <th>Payment Date</th>
+                <th>Actions</th>
+            </tr>
+        </ng-template>
+
+        <ng-template pTemplate="body" let-payroll>
+            <tr>
+                <td>{{payroll.employeeName}}</td>
+                <td>{{payroll.periodStart | date}} - {{payroll.periodEnd | date}}</td>
+                <td>{{payroll.basicSalary | currency}}</td>
+                <td>{{payroll.allowances | currency}}</td>
+                <td>{{payroll.deductions | currency}}</td>
+                <td>{{payroll.netSalary | currency}}</td>
+                <td>
+                    <p-tag [value]="payroll.status" [severity]="getSeverity(payroll.status)"></p-tag>
+                </td>
+                <td>{{payroll.paymentDate | date}}</td>
+                <td>
+                    <button pButton pRipple icon="pi pi-pencil" class="p-button-rounded p-button-success mr-2"
+                        (click)="editPayroll(payroll)"></button>
+                    <button pButton pRipple icon="pi pi-trash" class="p-button-rounded p-button-danger"
+                        (click)="deletePayroll(payroll)"></button>
+                </td>
+            </tr>
+        </ng-template>
+    </p-table>
+</div>
+
+<p-dialog [(visible)]="payrollDialog" [style]="{width: '450px'}" header="Payroll Details" [modal]="true">
+    <form *ngIf="payroll" (ngSubmit)="savePayroll()">
+        <div class="p-fluid">
+            <div class="p-field">
+                <label for="employeeName">Employee Name</label>
+                <input pInputText id="employeeName" [(ngModel)]="payroll.employeeName" name="employeeName" required />
+            </div>
+
+            <div class="p-field">
+                <label for="periodStart">Period Start</label>
+                <p-calendar id="periodStart" [(ngModel)]="payroll.periodStart" name="periodStart" [showIcon]="true" required></p-calendar>
+            </div>
+
+            <div class="p-field">
+                <label for="periodEnd">Period End</label>
+                <p-calendar id="periodEnd" [(ngModel)]="payroll.periodEnd" name="periodEnd" [showIcon]="true" required></p-calendar>
+            </div>
+
+            <div class="p-field">
+                <label for="basicSalary">Basic Salary</label>
+                <p-inputNumber id="basicSalary" [(ngModel)]="payroll.basicSalary" name="basicSalary" mode="currency" currency="USD" locale="en-US"
+                    (onInput)="calculateNetSalary()"></p-inputNumber>
+            </div>
+
+            <div class="p-field">
+                <label for="allowances">Allowances</label>
+                <p-inputNumber id="allowances" [(ngModel)]="payroll.allowances" name="allowances" mode="currency" currency="USD" locale="en-US"
+                    (onInput)="calculateNetSalary()"></p-inputNumber>
+            </div>
+
+            <div class="p-field">
+                <label for="deductions">Deductions</label>
+                <p-inputNumber id="deductions" [(ngModel)]="payroll.deductions" name="deductions" mode="currency" currency="USD" locale="en-US"
+                    (onInput)="calculateNetSalary()"></p-inputNumber>
+            </div>
+
+            <div class="p-field">
+                <label for="netSalary">Net Salary</label>
+                <p-inputNumber id="netSalary" [(ngModel)]="payroll.netSalary" name="netSalary" mode="currency" currency="USD" locale="en-US" [readonly]="true"></p-inputNumber>
+            </div>
+
+            <div class="p-field">
+                <label for="status">Status</label>
+                <p-dropdown id="status" [options]="statuses" [(ngModel)]="payroll.status" name="status" optionLabel="label" optionValue="value"></p-dropdown>
+            </div>
+
+            <div class="p-field" *ngIf="payroll.status === 'PAID'">
+                <label for="paymentDate">Payment Date</label>
+                <p-calendar id="paymentDate" [(ngModel)]="payroll.paymentDate" name="paymentDate" [showIcon]="true"></p-calendar>
+            </div>
+        </div>
+
+        <div class="p-dialog-footer">
+            <button pButton pRipple type="button" label="Cancel" icon="pi pi-times" class="p-button-text" (click)="payrollDialog = false"></button>
+            <button pButton pRipple type="submit" label="Save" icon="pi pi-check" class="p-button-text"></button>
+        </div>
+    </form>
+</p-dialog>

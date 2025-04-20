@@ -8,6 +8,7 @@ import { ToastModule } from 'primeng/toast';
 import { AuthService } from '../../pages/service/auth.service';
 import { Router } from '@angular/router';
 
+
 @Component({
     standalone: true,
     imports: [
@@ -33,7 +34,6 @@ export class LoginComponent {
     ) { }
 
     isLoading = false;
-
     login() {
         this.isLoading = true;
         this.authService.login(this.email, this.password).subscribe({
@@ -53,5 +53,4 @@ export class LoginComponent {
             }
         });
     }
-
 }

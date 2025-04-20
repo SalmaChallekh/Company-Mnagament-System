@@ -1,0 +1,58 @@
+<div class="grid">
+    <div class="col-12">
+        <p-card header="Reports Dashboard">
+            <div class="grid">
+                <div class="col-12 md:col-8">
+                    <p-chart type="bar" [data]="chartData" [options]="chartOptions"></p-chart>
+                </div>
+                <div class="col-12 md:col-4">
+                    <div class="p-fluid">
+                        <div class="p-field">
+                            <label for="reportType">Report Type</label>
+                            <p-dropdown id="reportType" [options]="reportTypes" [(ngModel)]="selectedReportType"
+                                optionLabel="label" optionValue="value"></p-dropdown>
+                        </div>
+                        <div class="p-field">
+                            <label for="dateRange">Date Range</label>
+                            <p-calendar id="dateRange" [(ngModel)]="dateRange" selectionMode="range"
+                                [readonlyInput]="true" [showIcon]="true"></p-calendar>
+                        </div>
+                        <button pButton type="button" label="Generate Report" icon="pi pi-file-pdf"
+                            class="p-button-success" (click)="generateReport()"></button>
+                    </div>
+                </div>
+            </div>
+        </p-card>
+    </div>
+
+    <div class="col-12">
+        <p-card header="Available Reports">
+            <p-table [value]="reports()" [paginator]="true" [rows]="5" [showCurrentPageReport]="true"
+                currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries">
+                <ng-template pTemplate="header">
+                    <tr>
+                        <th>Report Title</th>
+                        <th>Type</th>
+                        <th>Period</th>
+                        <th>Generated Date</th>
+                        <th>Downloads</th>
+                        <th>Actions</th>
+                    </tr>
+                </ng-template>
+                <ng-template pTemplate="body" let-report>
+                    <tr>
+                        <td>{{report.title}}</td>
+                        <td>{{report.type}}</td>
+                        <td>{{report.period}}</td>
+                        <td>{{report.generatedDate | date}}</td>
+                        <td>{{report.downloadCount}}</td>
+                        <td>
+                            <button pButton pRipple icon="pi pi-download" class="p-button-rounded p-button-info"
+                                (click)="downloadReport(report)"></button>
+                        </td>
+                    </tr>
+                </ng-template>
+            </p-table>
+        </p-card>
+    </div>
+</div>
