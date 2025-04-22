@@ -3,7 +3,6 @@ package com.pfe.project_service.controller;
 import com.pfe.project_service.dto.ProjectDTO;
 import com.pfe.project_service.dto.TaskDTO;
 import com.pfe.project_service.entity.Project;
-import com.pfe.project_service.entity.Task;
 import com.pfe.project_service.service.ProjectService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -27,12 +26,12 @@ public class ProjectController {
         );
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/getById/{id}")
     public ResponseEntity<ProjectDTO> getProjectById(@PathVariable String id) {
         return ResponseEntity.ok(projectService.getProjectWithTasks(id));
     }
 
-    @GetMapping
+    @GetMapping("getAll")
     public ResponseEntity<List<ProjectDTO>> getAllProjects() {
         List<ProjectDTO> projects = projectService.getAllProject().stream()
                 .map(ProjectDTO::new)
@@ -58,21 +57,7 @@ public class ProjectController {
         return ResponseEntity.ok(tasks);
     }
 }
-/*@RestController
-@RequestMapping("api/projects")
-@RequiredArgsConstructor
-public class ProjectController {
-    private final ProjectService projectService;
-
-    @PostMapping("/create")
-    public ResponseEntity<Project> createProject(@RequestBody Project project) {
-        return new ResponseEntity<>(projectService.createProject(project), HttpStatus.CREATED);
-    }
-
-    @GetMapping("/{id}")
-    public ResponseEntity<Project> getProjectById(@PathVariable String id) {
-        return ResponseEntity.ok(projectService.getProjectById(id));
-    }
+/*
 
     @GetMapping
     public ResponseEntity<List<Project>> getAllProjects() {
@@ -90,17 +75,5 @@ public class ProjectController {
         return ResponseEntity.noContent().build();
     }
 
-    @PostMapping("/{projectId}/tasks")
-    public ResponseEntity<Task> addTaskToProject(@PathVariable String projectId, @RequestBody Task task) {
-        return new ResponseEntity<>(
-                projectService.addTaskToProject(projectId, task),
-                HttpStatus.CREATED
-        );
-    }
-
-    @GetMapping("/{projectId}/tasks")
-    public ResponseEntity<List<Task>> getTasksByProjectId(@PathVariable String projectId) {
-        return ResponseEntity.ok(projectService.getTasksByProjectId(projectId));
-    }
 
 }*/

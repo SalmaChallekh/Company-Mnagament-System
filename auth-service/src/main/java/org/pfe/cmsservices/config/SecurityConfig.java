@@ -1,5 +1,6 @@
 package org.pfe.cmsservices.config;
 
+import org.apache.catalina.filters.CorsFilter;
 import org.pfe.cmsservices.filter.JwtAuthenticationFilter;
 import org.pfe.cmsservices.security.JwtTokenProvider;
 import org.springframework.context.annotation.Bean;
@@ -15,6 +16,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 @Configuration
 @EnableWebSecurity
@@ -45,7 +48,6 @@ public class SecurityConfig {
     public RestTemplate restTemplate() {
         return new RestTemplate();
     }
-
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http.csrf(csrf -> csrf.disable()) // Disable CSRF as we're using JWT for security
@@ -64,10 +66,5 @@ public class SecurityConfig {
         http.addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
-    }
-
-    @Bean
-    public WebSecurityCustomizer webSecurityCustomizer() {
-        return (web) -> web.ignoring().requestMatchers("/api/auth/**"); // Adjust CORS for these paths
     }
 }
