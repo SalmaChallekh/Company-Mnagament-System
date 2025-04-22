@@ -3,7 +3,7 @@ package org.pfe.cmsservices.service;
 import com.pfe.department_service.dto.DepartmentRequest;
 import org.pfe.cmsservices.dto.AdminCreateUserRequest;
 import org.pfe.cmsservices.dto.DepartmentResponse;
-import org.pfe.cmsservices.entity.User;
+import org.pfe.cmsservices.entity.*;
 import org.pfe.cmsservices.enums.RoleEnum;
 import org.pfe.cmsservices.repository.UserRepository;
 import jakarta.persistence.EntityExistsException;
@@ -57,18 +57,30 @@ public class UserService {
     }
 
     // Admin creates profile
+    @Transactional
     public void createUserProfile(String email, RoleEnum role, Long deptId) {
-        User user = User.builder()
-                .email(email)
-                .role(role)
-                .departmentId(deptId)
-                .verificationToken(UUID.randomUUID().toString())
-                .tokenExpiry(LocalDateTime.now().plusDays(2))
-                .build();
+        if (userRepository.existsByEmail(email)) {
+            throw new RuntimeException("Email already exists");
+        }
 
-        userRepository.save(user);
+        User user = switch (role) {
+            case ROLE_MANAGER -> new Manager();
+            case ROLE_FINANCE -> new Finance();
+            case ROLE_EMPLOYEE -> new Employee();
+            case ROLE_HR -> new HumanRessource();
+            default -> new User(); // for ROLE_ADMIN, ROLE_USER etc.
+        };
+
+        user.setEmail(email);
+        user.setRole(role);
+        user.setDepartmentId(deptId);
+        user.setVerificationToken(UUID.randomUUID().toString());
+        user.setTokenExpiry(LocalDateTime.now().plusDays(2));
+
+        userRepository.save(user);  // Saves to both tables automatically
         emailService.sendActivationEmail(email, user.getVerificationToken());
     }
+
     // User completes registration
     public void completeRegistration(String token, String password) {
         User user = userRepository.findByVerificationToken(token)

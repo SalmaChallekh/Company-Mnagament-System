@@ -8,7 +8,6 @@ public enum RoleEnum {
     ROLE_EMPLOYEE,
     ROLE_FINANCE;
     public String getAuthority() {
-        return this.name(); // Returns the role name when needed (e.g., ROLE_USER)
+        return this.name();
     }
-
 }

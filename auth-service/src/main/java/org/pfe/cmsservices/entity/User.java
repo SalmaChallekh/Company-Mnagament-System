@@ -12,6 +12,8 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@Inheritance(strategy = InheritanceType.JOINED)
+@Table(name = "user")
 public class User {
 
     @Id
@@ -41,6 +43,6 @@ public class User {
     @Column
     private String verificationToken;
     @Column(name = "token_expiry")
-    @Builder.Default // Makes this field work with Lombok's builder
-    private LocalDateTime tokenExpiry = LocalDateTime.now().plusDays(2); // Default value
+    @Builder.Default
+    private LocalDateTime tokenExpiry = LocalDateTime.now().plusDays(2);
 }
