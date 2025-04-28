@@ -5,6 +5,7 @@ import com.pfe.department_service.dto.DepartmentRequest;
 import com.pfe.department_service.entity.Department;
 import com.pfe.department_service.exception.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -44,6 +45,14 @@ public class DepartmentService {
     public void deleteDepartment(Long id) {
         Department department = getDepartmentById(id);
         repo.delete(department);
+    }
+    public boolean existsById(Long id) {
+        try {
+            return repo.existsById(id);
+        } catch (Exception e) {
+            //log.error("Error checking department existence for id: {}", id, e);
+            throw new DataAccessException("Failed to check department existence") {};
+        }
     }
 }
 

@@ -1,11 +1,13 @@
 package com.pfe.department_service.controller;
 
 import com.pfe.department_service.dto.DepartmentRequest;
+import com.pfe.department_service.dto.DepartmentResponse;
 import com.pfe.department_service.entity.Department;
 import com.pfe.department_service.exception.DepartmentNotFoundException;
 import com.pfe.department_service.exception.ResourceNotFoundException;
 import com.pfe.department_service.service.DepartmentService;
 import lombok.RequiredArgsConstructor;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -14,7 +16,6 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.List;
 
 @RestController
@@ -25,15 +26,13 @@ public class DepartmentController {
     private final DepartmentService service;
     private static final Logger log = LoggerFactory.getLogger(DepartmentController.class);
     @PreAuthorize("hasRole('ADMIN')")
-    //@PreAuthorize("hasRole('ROLE_ADMIN')")
     @PostMapping("/create")
     public ResponseEntity<?> create(@RequestBody DepartmentRequest request) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        log.debug("Authenticated userrrrrrr: {}", authentication.getName());
-        log.debug("User roles: {}", authentication.getAuthorities());
+        log.debug("Authenticated user: {}", authentication.getName());
+        log.debug("User role: {}", authentication.getAuthorities());
         return new ResponseEntity<>(service.createDepartment(request), HttpStatus.CREATED);
     }
-
 
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/getAll")
@@ -44,6 +43,7 @@ public class DepartmentController {
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/getById/{id}")
     public Department getDepartmentById(@PathVariable("id") Long id) {
+
         return service.getDepartmentById(id);
     }
     @PreAuthorize("hasRole('ADMIN')")
@@ -57,7 +57,6 @@ public class DepartmentController {
         }
     }
 
-
     @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<?> delete(@PathVariable("id") Long id) {
@@ -68,6 +67,21 @@ public class DepartmentController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Department not found");
         }
     }
+    @GetMapping("/exists/{id}")
+    public ResponseEntity<Boolean> departmentExists(@PathVariable("id") Long id) {
+        boolean exists = service.existsById(id);
+        return ResponseEntity.ok(exists);
+    }
 
+    @GetMapping("/public/{id}")
+    public ResponseEntity<DepartmentResponse> getDepartmentPublicInfo(@PathVariable("id") Long id) {
+        Department department = service.getDepartmentById(id);
+        DepartmentResponse response = new DepartmentResponse(
+                department.getId(),
+                department.getName(),
+                department.getDescription()
+        );
+        return ResponseEntity.ok(response);
+    }
 }
 

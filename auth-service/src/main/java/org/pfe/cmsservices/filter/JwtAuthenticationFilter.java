@@ -51,7 +51,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         try {
             String token = jwtTokenProvider.resolveToken(request);
 
-            if (token != null && jwtTokenProvider.validateToken(token)) {
+            if (token == null) {
+                sendError(response, "Authorization token is missing", HttpStatus.UNAUTHORIZED);
+                return;
+            }
+
+            if (jwtTokenProvider.validateToken(token)) {
                 Authentication authentication = jwtTokenProvider.getAuthentication(token);
                 SecurityContextHolder.getContext().setAuthentication(authentication);
 
@@ -59,7 +64,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                         authentication.getName(),
                         authentication.getAuthorities());
             } else {
-                sendError(response, "Missing or invalid token", HttpStatus.UNAUTHORIZED);
+                sendError(response, "Invalid or expired token", HttpStatus.UNAUTHORIZED);
                 return;
             }
         } catch (ExpiredJwtException ex) {

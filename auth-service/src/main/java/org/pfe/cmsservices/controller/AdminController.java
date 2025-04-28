@@ -4,8 +4,6 @@ import lombok.RequiredArgsConstructor;
 
 import org.pfe.cmsservices.enums.RoleEnum;
 import org.pfe.cmsservices.service.UserService;
-
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.security.access.prepost.PreAuthorize;
 
@@ -28,17 +26,6 @@ public class AdminController {
                 request.departmentId()
         );
     }
-
-
-        /*@PostMapping("/activate")
-        public void activateUser(@RequestBody ActivateRequest request) {
-            userService.completeRegistration(request.token(), request.password());
-        }*/
-        /*only for testing*/
-
-
-
-    // Records for requests
         public record CreateUserRequest(String email, RoleEnum role, Long departmentId) {}
         public record ActivateRequest(String token, String password) {}
     }

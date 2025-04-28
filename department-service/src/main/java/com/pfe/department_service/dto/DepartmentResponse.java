@@ -1,10 +1,11 @@
 package com.pfe.department_service.dto;
 
-import lombok.Builder;
-import lombok.Data;
+import lombok.*;
 
 @Data
 @Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class DepartmentResponse {
     private Long id;
     private String name;

@@ -7,6 +7,7 @@ import com.pfe.project_service.service.ProjectService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -17,7 +18,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class ProjectController {
     private final ProjectService projectService;
-
+    @PreAuthorize("hasAnyRole('MANAGER', 'ADMIN')")
     @PostMapping("/create")
     public ResponseEntity<ProjectDTO> createProject(@RequestBody Project project) {
         return new ResponseEntity<>(
@@ -25,12 +26,12 @@ public class ProjectController {
                 HttpStatus.CREATED
         );
     }
-
+    @PreAuthorize("hasAnyRole('MANAGER', 'ADMIN')")
     @GetMapping("/getById/{id}")
     public ResponseEntity<ProjectDTO> getProjectById(@PathVariable String id) {
         return ResponseEntity.ok(projectService.getProjectWithTasks(id));
     }
-
+    @PreAuthorize("hasAnyRole('MANAGER', 'ADMIN')")
     @GetMapping("getAll")
     public ResponseEntity<List<ProjectDTO>> getAllProjects() {
         List<ProjectDTO> projects = projectService.getAllProject().stream()
@@ -38,7 +39,7 @@ public class ProjectController {
                 .collect(Collectors.toList());
         return ResponseEntity.ok(projects);
     }
-
+    @PreAuthorize("hasAnyRole('MANAGER', 'ADMIN')")
     @PostMapping("/{projectId}/tasks")
     public ResponseEntity<TaskDTO> addTaskToProject(
             @PathVariable String projectId,
@@ -48,7 +49,7 @@ public class ProjectController {
                 HttpStatus.CREATED
         );
     }
-
+    @PreAuthorize("hasAnyRole('MANAGER', 'ADMIN')")
     @GetMapping("/{projectId}/tasks")
     public ResponseEntity<List<TaskDTO>> getTasksByProjectId(@PathVariable String projectId) {
         List<TaskDTO> tasks = projectService.getTasksByProjectId(projectId).stream()

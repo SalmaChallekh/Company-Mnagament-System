@@ -87,3 +87,94 @@ public class JwtTokenProvider {
 }
 
 
+
+/*@Component
+public class JwtTokenProvider {
+
+    private final Logger logger = LoggerFactory.getLogger(JwtTokenProvider.class);
+    private final Key secretKey;
+    private final long validityInMilliseconds;
+
+    public JwtTokenProvider(
+            @Value("${jwt.secret}") String secret,
+            @Value("${jwt.expiration-ms:86400000}") long validityInMilliseconds) {
+
+        if (secret == null || secret.length() < 64) {
+            throw new IllegalArgumentException("JWT secret key must be at least 64 characters long");
+        }
+        this.secretKey = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
+        this.validityInMilliseconds = validityInMilliseconds;
+    }
+
+    public String generateToken(Authentication authentication) {
+        // Get all roles (not just first one)
+        List<String> roles = authentication.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .collect(Collectors.toList());
+
+        logger.debug("Generating token for user: {} with roles: {}",
+                authentication.getName(), roles);
+
+        return Jwts.builder()
+                .setSubject(authentication.getName())
+                .claim("roles", roles)  // Store all roles as list
+                .setIssuedAt(new Date())
+                .setExpiration(new Date(System.currentTimeMillis() + validityInMilliseconds))
+                .signWith(secretKey, SignatureAlgorithm.HS512)
+                .compact();
+    }
+
+    public boolean validateToken(String token) {
+        try {
+            Jwts.parserBuilder()
+                    .setSigningKey(secretKey)
+                    .build()
+                    .parseClaimsJws(token);
+            return true;
+        } catch (ExpiredJwtException ex) {
+            logger.warn("Expired JWT token: {}", ex.getMessage());
+            throw new JwtAuthenticationException("Token expired");
+        } catch (MalformedJwtException ex) {
+            logger.warn("Invalid JWT token: {}", ex.getMessage());
+            throw new JwtAuthenticationException("Invalid token");
+        } catch (JwtException | IllegalArgumentException ex) {
+            logger.error("JWT validation error: {}", ex.getMessage());
+            throw new JwtAuthenticationException("JWT validation failed");
+        }
+    }
+
+    public Authentication getAuthentication(String token) {
+        Claims claims = Jwts.parserBuilder()
+                .setSigningKey(secretKey)
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
+
+        String username = claims.getSubject();
+        List<String> roles = claims.get("roles", List.class);
+
+        Collection<SimpleGrantedAuthority> authorities = roles.stream()
+                .map(SimpleGrantedAuthority::new)
+                .collect(Collectors.toList());
+
+        return new UsernamePasswordAuthenticationToken(
+                username, null, authorities);
+    }
+
+    public String resolveToken(HttpServletRequest request) {
+        String bearerToken = request.getHeader("Authorization");
+        if (StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer ")) {
+            return bearerToken.substring(7);
+        }
+        return null;
+    }
+}
+
+// Custom exception
+class JwtAuthenticationException extends RuntimeException {
+    public JwtAuthenticationException(String message) {
+        super(message);
+    }
+}*/
+
+
