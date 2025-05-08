@@ -116,7 +116,7 @@ export class AppConfigurator {
                 primary: 'rose',
                 surface: 'soho',
                 preset: 'Lara'
-                
+
             }));
 
             this.onPresetChange('Lara');

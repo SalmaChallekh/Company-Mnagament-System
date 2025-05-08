@@ -1,54 +1,92 @@
 <div class="grid">
+    <!-- Reports Dashboard Card -->
     <div class="col-12">
-        <p-card header="Reports Dashboard">
+        <p-card header="Reports Dashboard" subheader="Generate and analyze system reports" class="mb-4 shadow-2">
             <div class="grid">
-                <div class="col-12 md:col-8">
-                    <p-chart type="bar" [data]="chartData" [options]="chartOptions"></p-chart>
+                <!-- Chart Section -->
+                <div class="col-12 md:col-8 lg:col-9">
+                    <div class="card p-4 border-round" style="background-color: var(--surface-ground);">
+                        <p-chart type="bar" [data]="chartData" [options]="chartOptions"
+                            style="height: 320px;"></p-chart>
+                    </div>
                 </div>
-                <div class="col-12 md:col-4">
+
+                <!-- Report Filters Section -->
+                <div class="col-12 md:col-4 lg:col-3">
                     <div class="p-fluid">
-                        <div class="p-field">
-                            <label for="reportType">Report Type</label>
+                        <!-- Report Type Dropdown -->
+                        <div class="mb-4">
+                            <label for="reportType" class="block font-medium mb-2">Report Type</label>
                             <p-dropdown id="reportType" [options]="reportTypes" [(ngModel)]="selectedReportType"
-                                optionLabel="label" optionValue="value"></p-dropdown>
+                                optionLabel="label" optionValue="value" class="w-full"></p-dropdown>
                         </div>
-                        <div class="p-field">
-                            <label for="dateRange">Date Range</label>
+
+                        <!-- Date Range Calendar -->
+                        <div class="mb-4">
+                            <label for="dateRange" class="block font-medium mb-2">Date Range</label>
                             <p-calendar id="dateRange" [(ngModel)]="dateRange" selectionMode="range"
-                                [readonlyInput]="true" [showIcon]="true"></p-calendar>
+                                [readonlyInput]="true" [showIcon]="true" class="w-full" [dateFormat]="'dd/mm/yy'"
+                                [showButtonBar]="true" [monthNavigator]="true" [yearNavigator]="true"
+                                yearRange="2000:2030" placeholder="Select a date range"></p-calendar>
                         </div>
-                        <button pButton type="button" label="Generate Report" icon="pi pi-file-pdf"
-                            class="p-button-success" (click)="generateReport()"></button>
+
+
+                        <!-- Generate Report Button -->
+                        <div class="mt-2">
+                            <button pButton type="button" label="Generate Report" icon="pi pi-file-pdf"
+                                class="w-full p-button-raised p-button-primary" (click)="generateReport()"></button>
+                        </div>
                     </div>
                 </div>
             </div>
         </p-card>
     </div>
 
+    <!-- Available Reports Card -->
     <div class="col-12">
-        <p-card header="Available Reports">
+        <p-card header="Available Reports" subheader="Previously generated reports" class="mb-4 shadow-2">
             <p-table [value]="reports()" [paginator]="true" [rows]="5" [showCurrentPageReport]="true"
-                currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries">
+                currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries"
+                [rowsPerPageOptions]="[5,10,25]" styleClass="p-datatable-striped p-datatable-gridlines">
                 <ng-template pTemplate="header">
                     <tr>
-                        <th>Report Title</th>
-                        <th>Type</th>
-                        <th>Period</th>
-                        <th>Generated Date</th>
-                        <th>Downloads</th>
-                        <th>Actions</th>
+                        <th pSortableColumn="title">Report Title <p-sortIcon field="title"></p-sortIcon></th>
+                        <th pSortableColumn="type">Type <p-sortIcon field="type"></p-sortIcon></th>
+                        <th pSortableColumn="period">Period <p-sortIcon field="period"></p-sortIcon></th>
+                        <th pSortableColumn="generatedDate">Generated Date <p-sortIcon
+                                field="generatedDate"></p-sortIcon></th>
+                        <th pSortableColumn="downloadCount">Downloads <p-sortIcon field="downloadCount"></p-sortIcon>
+                        </th>
+                        <th style="width: 100px;">Actions</th>
                     </tr>
                 </ng-template>
+
                 <ng-template pTemplate="body" let-report>
                     <tr>
-                        <td>{{report.title}}</td>
-                        <td>{{report.type}}</td>
-                        <td>{{report.period}}</td>
-                        <td>{{report.generatedDate | date}}</td>
-                        <td>{{report.downloadCount}}</td>
+                        <td class="font-medium">{{ report.title }}</td>
+                        <td><span class="p-tag">{{ report.type }}</span></td>
+                        <td>{{ report.period }}</td>
+                        <td>{{ report.generatedDate | date:'mediumDate' }}</td>
                         <td>
-                            <button pButton pRipple icon="pi pi-download" class="p-button-rounded p-button-info"
-                                (click)="downloadReport(report)"></button>
+                            <span class="flex align-items-center">
+                                <i class="pi pi-download mr-2"></i>{{ report.downloadCount }}
+                            </span>
+                        </td>
+                        <td>
+                            <div class="flex gap-2">
+                                <button pButton pRipple icon="pi pi-eye" class="p-button-rounded p-button-text"
+                                    tooltip="Preview" tooltipPosition="top"></button>
+                                <button pButton pRipple icon="pi pi-download" class="p-button-rounded p-button-text"
+                                    (click)="downloadReport(report)" tooltip="Download" tooltipPosition="top"></button>
+                            </div>
+                        </td>
+                    </tr>
+                </ng-template>
+
+                <ng-template pTemplate="emptymessage">
+                    <tr>
+                        <td colspan="6" class="text-center py-5 text-color-secondary">
+                            <i class="pi pi-file-excel mr-2"></i> No reports found
                         </td>
                     </tr>
                 </ng-template>

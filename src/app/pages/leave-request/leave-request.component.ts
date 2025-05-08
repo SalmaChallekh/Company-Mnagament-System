@@ -1,50 +1,52 @@
-import { Component, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Component, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { TableModule } from 'primeng/table';
-import { ButtonModule } from 'primeng/button';
 import { TagModule } from 'primeng/tag';
+import { ButtonModule } from 'primeng/button';
 import { ToolbarModule } from 'primeng/toolbar';
 import { DialogModule } from 'primeng/dialog';
+import { InputTextModule } from 'primeng/inputtext';
+import { InputTextarea } from 'primeng/inputtextarea';
 import { CalendarModule } from 'primeng/calendar';
 import { DropdownModule } from 'primeng/dropdown';
-import { InputTextarea } from 'primeng/inputtextarea';
-import { ConfirmationService, MessageService } from 'primeng/api';
-import { ConfirmDialogModule } from 'primeng/confirmdialog';
-import { ToastModule } from 'primeng/toast';
 import { InputNumberModule } from 'primeng/inputnumber';
+import { ConfirmDialogModule } from 'primeng/confirmdialog';
+import { IconFieldModule } from 'primeng/iconfield';
+import { InputIconModule } from 'primeng/inputicon';
+import { ConfirmationService, MessageService } from 'primeng/api';
 
-export interface LeaveRequest {
+interface LeaveRequest {
     id: string;
-    employeeId: string;
     employeeName: string;
-    leaveType: 'ANNUAL' | 'SICK' | 'MATERNITY' | 'PATERNITY' | 'UNPAID';
+    leaveType: string;
     startDate: Date;
     endDate: Date;
     daysRequested: number;
     reason: string;
     status: 'PENDING' | 'APPROVED' | 'REJECTED';
     approvedBy?: string;
-    approvedDate?: Date;
 }
 
 @Component({
-    selector: 'app-leave-request',
+    selector: 'app-leave-management',
     standalone: true,
     imports: [
         CommonModule,
         FormsModule,
         TableModule,
-        ButtonModule,
         TagModule,
+        ButtonModule,
         ToolbarModule,
         DialogModule,
+        InputTextModule,
+        InputTextModule,
         CalendarModule,
         DropdownModule,
-        InputTextarea,
+        InputNumberModule,
         ConfirmDialogModule,
-        ToastModule,
-        InputNumberModule
+        IconFieldModule,
+        InputIconModule
     ],
     templateUrl: './leave-request.component.html',
     styleUrls: ['./leave-request.component.scss'],
@@ -52,81 +54,57 @@ export interface LeaveRequest {
 })
 export class LeaveRequestComponent {
     leaveRequests = signal<LeaveRequest[]>([]);
-    selectedLeaveRequests: LeaveRequest[] = [];
+    leaveTypes = ['Annual', 'Sick', 'Maternity', 'Paternity', 'Unpaid', 'Other'];
+    selectedRequests: LeaveRequest[] = [];
     leaveDialog = false;
-    leaveRequest: LeaveRequest = this.emptyLeaveRequest();
-    submitted = false;
+    leaveRequest: LeaveRequest = this.emptyRequest();
 
-    leaveTypes = [
-        { label: 'Annual Leave', value: 'ANNUAL' },
-        { label: 'Sick Leave', value: 'SICK' },
-        { label: 'Maternity Leave', value: 'MATERNITY' },
-        { label: 'Paternity Leave', value: 'PATERNITY' },
-        { label: 'Unpaid Leave', value: 'UNPAID' }
+    cols = [
+        { field: 'employeeName', header: 'Employee' },
+        { field: 'leaveType', header: 'Leave Type' },
+        { field: 'startDate', header: 'Start Date' },
+        { field: 'daysRequested', header: 'Days' },
+        { field: 'reason', header: 'Reason' },
+        { field: 'status', header: 'Status' },
+        { field: 'approvedBy', header: 'Approved By' }
     ];
 
-    statuses = [
-        { label: 'Pending', value: 'PENDING' },
-        { label: 'Approved', value: 'APPROVED' },
-        { label: 'Rejected', value: 'REJECTED' }
-    ];
-
-    constructor(
-        private confirmationService: ConfirmationService,
-        private messageService: MessageService
-    ) { }
-
-    ngOnInit() {
-        this.loadSampleData();
+    ngOnInit(): void {
+        this.loadDemoData();
     }
 
-    loadSampleData() {
-        const sampleData: LeaveRequest[] = [
+    loadDemoData() {
+        const demoRequests: LeaveRequest[] = [
             {
                 id: '1',
-                employeeId: 'EMP001',
                 employeeName: 'John Doe',
-                leaveType: 'ANNUAL',
-                startDate: new Date(2023, 5, 1),
-                endDate: new Date(2023, 5, 5),
+                leaveType: 'Annual',
+                startDate: new Date(2023, 10, 1),
+                endDate: new Date(2023, 10, 5),
                 daysRequested: 5,
-                reason: 'Family vacation',
+                reason: 'Vacation with family',
                 status: 'APPROVED',
-                approvedBy: 'Manager',
-                approvedDate: new Date(2023, 4, 25)
+                approvedBy: 'Jane Smith'
             },
             {
                 id: '2',
-                employeeId: 'EMP002',
                 employeeName: 'Jane Smith',
-                leaveType: 'SICK',
-                startDate: new Date(2023, 5, 10),
-                endDate: new Date(2023, 5, 12),
+                leaveType: 'Sick',
+                startDate: new Date(2023, 10, 10),
+                endDate: new Date(2023, 10, 12),
                 daysRequested: 3,
-                reason: 'Flu',
-                status: 'APPROVED'
-            },
-            {
-                id: '3',
-                employeeId: 'EMP003',
-                employeeName: 'Bob Johnson',
-                leaveType: 'PATERNITY',
-                startDate: new Date(2023, 6, 1),
-                endDate: new Date(2023, 6, 14),
-                daysRequested: 14,
-                reason: 'Newborn baby',
+                reason: 'Flu recovery',
                 status: 'PENDING'
             }
         ];
-        this.leaveRequests.set(sampleData);
+        this.leaveRequests.set(demoRequests);
     }
 
-    emptyLeaveRequest(): LeaveRequest {
+    emptyRequest(): LeaveRequest {
         return {
             id: '',
-            employeeId: '',
             employeeName: '',
-            leaveType: 'ANNUAL',
+            leaveType: 'Annual',
             startDate: new Date(),
             endDate: new Date(),
             daysRequested: 1,
@@ -136,31 +114,34 @@ export class LeaveRequestComponent {
     }
 
     openNew() {
-        this.leaveRequest = this.emptyLeaveRequest();
-        this.submitted = false;
+        this.leaveRequest = this.emptyRequest();
         this.leaveDialog = true;
     }
 
-    editLeave(leave: LeaveRequest) {
-        this.leaveRequest = { ...leave };
+    editLeave(request: LeaveRequest) {
+        this.leaveRequest = { ...request };
         this.leaveDialog = true;
     }
 
-    deleteLeave(leave: LeaveRequest) {
-        this.confirmationService.confirm({
-            message: 'Are you sure you want to delete this leave request?',
-            header: 'Confirm',
-            icon: 'pi pi-exclamation-triangle',
-            accept: () => {
-                this.leaveRequests.set(this.leaveRequests().filter(l => l.id !== leave.id));
-                this.messageService.add({
-                    severity: 'success',
-                    summary: 'Successful',
-                    detail: 'Leave Request Deleted',
-                    life: 3000
-                });
+    saveLeave() {
+        const requests = this.leaveRequests();
+
+        if (this.leaveRequest.id) {
+            const index = requests.findIndex(r => r.id === this.leaveRequest.id);
+            if (index !== -1) {
+                requests[index] = { ...this.leaveRequest };
             }
-        });
+        } else {
+            this.leaveRequest.id = this.generateId();
+            requests.push({ ...this.leaveRequest });
+        }
+
+        this.leaveRequests.set([...requests]);
+        this.leaveDialog = false;
+    }
+
+    deleteLeave(request: LeaveRequest) {
+        this.leaveRequests.set(this.leaveRequests().filter(r => r.id !== request.id));
     }
 
     calculateDays() {
@@ -170,46 +151,7 @@ export class LeaveRequestComponent {
         }
     }
 
-    saveLeave() {
-        this.submitted = true;
-
-        if (this.leaveRequest.employeeName?.trim() && this.leaveRequest.reason?.trim()) {
-            if (this.leaveRequest.id) {
-                // Update existing
-                const index = this.leaveRequests().findIndex(l => l.id === this.leaveRequest.id);
-                const updatedRequests = [...this.leaveRequests()];
-                updatedRequests[index] = this.leaveRequest;
-                this.leaveRequests.set(updatedRequests);
-
-                this.messageService.add({
-                    severity: 'success',
-                    summary: 'Successful',
-                    detail: 'Leave Request Updated',
-                    life: 3000
-                });
-            } else {
-                // Create new
-                this.leaveRequest.id = this.createId();
-                this.leaveRequest.status = 'PENDING';
-                this.leaveRequests.set([...this.leaveRequests(), this.leaveRequest]);
-                this.messageService.add({
-                    severity: 'success',
-                    summary: 'Successful',
-                    detail: 'Leave Request Created',
-                    life: 3000
-                });
-            }
-
-            this.leaveDialog = false;
-            this.leaveRequest = this.emptyLeaveRequest();
-        }
-    }
-
-    createId(): string {
-        return Math.random().toString(36).substring(2, 9);
-    }
-
-    getSeverity(status: 'PENDING' | 'APPROVED' | 'REJECTED') {
+    getStatusSeverity(status: string): 'success' | 'info' | 'warn' | 'danger' {
         switch (status) {
             case 'APPROVED':
                 return 'success';
@@ -217,6 +159,24 @@ export class LeaveRequestComponent {
                 return 'warn';
             case 'REJECTED':
                 return 'danger';
+            default:
+                return 'info';
         }
+    }
+
+    exportCSV() {
+        console.log('Exporting leave requests to CSV');
+    }
+
+    onGlobalFilter(table: any, event: Event) {
+        table.filterGlobal((event.target as HTMLInputElement).value, 'contains');
+    }
+
+    hideDialog() {
+        this.leaveDialog = false;
+    }
+
+    private generateId(): string {
+        return Math.random().toString(36).substring(2, 9);
     }
 }

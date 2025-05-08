@@ -14,232 +14,233 @@ import { MultiSelectModule } from 'primeng/multiselect';
 import { ToastModule } from 'primeng/toast';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { CardModule } from 'primeng/card';
+import { ProgressBarModule } from 'primeng/progressbar';
+import { IconFieldModule } from 'primeng/iconfield';
+import { InputIconModule } from 'primeng/inputicon';
+import { ConfirmationService, MessageService } from 'primeng/api';
+import { ProjectService } from '../../services/project.service';
+import { Router } from '@angular/router';
 
-export interface Employee {
-    id: string;
-    name: string;
-    email: string;
-    role: string;
-    department: string;
-    status: 'ACTIVE' | 'INACTIVE';
-}
-
-export interface Team {
-    id: string;
-    name: string;
-    members: Employee[];
-}
-
-export interface Task {
-    projectId: string;
-    id: string;
-    title: string;
-    description: string;
-    status: 'NOT_STARTED' | 'IN_PROGRESS' | 'COMPLETED' | 'BLOCKED';
-    priority: 'LOW' | 'MEDIUM' | 'HIGH';
-    dueDate: Date;
-    assignedTo: Employee[];
-}
-
-export interface Project {
-    id: string;
-    name: string;
-    description: string;
-    startDate: Date;
-    endDate: Date;
-    status: 'PLANNING' | 'IN_PROGRESS' | 'ON_HOLD' | 'COMPLETED';
-    teams: Team[];
-    tasks: Task[];
-}
 @Component({
     selector: 'app-project-management',
-    imports: [CommonModule,
+    standalone: true,
+    imports: [
+        CommonModule,
         FormsModule,
-        // PrimeNG Modules
         TableModule,
         TagModule,
         ButtonModule,
         ToolbarModule,
         DialogModule,
         InputTextModule,
-        InputTextModule,
+        InputTextarea,
         CalendarModule,
         DropdownModule,
         MultiSelectModule,
         ToastModule,
         CardModule,
-        ConfirmDialogModule],
+        ConfirmDialogModule,
+        ProgressBarModule,
+        IconFieldModule,
+        InputIconModule
+    ],
     templateUrl: './project-management.component.html',
-    styleUrl: './project-management.component.scss'
+    styleUrl: './project-management.component.scss',
+    providers: [MessageService, ConfirmationService]
 })
 export class ProjectManagementComponent {
-    projects = signal<Project[]>([]);
-    employees = signal<Employee[]>([]);
-    teams = signal<Team[]>([]);
+    projects = signal<any[]>([]);
+    selectedProjects: any[] = [];
+    projectDialog = false;
+    loading = signal(false);
+    deleteProjectDialog = false;
+    projectToDelete: any = null;
 
-    selectedProjects: Project[] = [];
-    selectedTasks: Task[] = [];
-
-    projectDialog: boolean = false;
-    taskDialog: boolean = false;
-    teamDialog: boolean = false;
-
-    project: Project = this.emptyProject();
-    task: Task = this.emptyTask();
-    team: Team = this.emptyTeam();
+    project: any = {
+        name: '',
+        description: '',
+        startDate: new Date(),
+        endDate: new Date(new Date().setMonth(new Date().getMonth() + 1)),
+        status: 'PLANNED',
+        ownerId: 0,
+        departmentId: 0
+    };
 
     statusOptions = [
-        { label: 'Planning', value: 'PLANNING' },
-        { label: 'In Progress', value: 'IN_PROGRESS' },
-        { label: 'On Hold', value: 'ON_HOLD' },
-        { label: 'Completed', value: 'COMPLETED' }
-    ];
-
-    taskStatusOptions = [
-        { label: 'Not Started', value: 'NOT_STARTED' },
+        { label: 'Planned', value: 'PLANNED' },
         { label: 'In Progress', value: 'IN_PROGRESS' },
         { label: 'Completed', value: 'COMPLETED' },
-        { label: 'Blocked', value: 'BLOCKED' }
+        { label: 'On Hold', value: 'ON_HOLD' }
     ];
 
-    priorityOptions = [
-        { label: 'Low', value: 'LOW' },
-        { label: 'Medium', value: 'MEDIUM' },
-        { label: 'High', value: 'HIGH' }
+    cols = [
+        { field: 'name', header: 'Project' },
+        { field: 'description', header: 'Description' },
+        { field: 'startDate', header: 'Start Date' },
+        { field: 'endDate', header: 'End Date' },
+        { field: 'status', header: 'Status' }
     ];
+
+    constructor(
+        private projectService: ProjectService,
+        private messageService: MessageService,
+        private confirmationService: ConfirmationService,
+        private router: Router
+    ) { }
 
     ngOnInit(): void {
-        this.loadDemoData();
+        this.loadProjects();
     }
 
-    loadDemoData() {
-        // Sample employees
-        const demoEmployees: Employee[] = [
-            { id: '1', name: 'John Doe', email: 'john@example.com', role: 'Developer', department: 'IT', status: 'ACTIVE' },
-            { id: '2', name: 'Jane Smith', email: 'jane@example.com', role: 'Designer', department: 'Creative', status: 'ACTIVE' },
-            { id: '3', name: 'Mike Johnson', email: 'mike@example.com', role: 'Manager', department: 'Operations', status: 'ACTIVE' }
-        ];
-        this.employees.set(demoEmployees);
-
-        // Sample teams
-        const demoTasks: Task[] = [
-            {
-                id: '1',
-                title: 'Design UI Mockups',
-                description: 'Create mockups for the new dashboard',
-                status: 'IN_PROGRESS',
-                priority: 'HIGH',
-                dueDate: new Date(2023, 11, 15),
-                assignedTo: [demoEmployees[1]],
-                projectId: ''
+    loadProjects() {
+        this.loading.set(true);
+        this.projectService.getAllProjects().subscribe({
+            next: (projects) => {
+                this.projects.set(projects);
+                this.loading.set(false);
+            },
+            error: (err) => {
+                this.messageService.add({
+                    severity: 'error',
+                    summary: 'Error',
+                    detail: 'Failed to load projects',
+                    life: 3000
+                });
+                this.loading.set(false);
             }
-        ];
-
-        const demoTeams: Team[] = [
-            { id: '1', name: 'Development Team', members: [demoEmployees[0], demoEmployees[2]] }
-        ];
-        this.teams.set(demoTeams);
-
-        // Sample projects
-        const demoProjects: Project[] = [
-            {
-                id: '1',
-                name: 'Website Redesign',
-                description: 'Complete redesign of company website',
-                startDate: new Date(2023, 10, 1),
-                endDate: new Date(2023, 11, 31),
-                status: 'IN_PROGRESS',
-                teams: demoTeams,
-                tasks: demoTasks
-            }
-        ];
-        this.projects.set(demoProjects);
+        });
     }
 
-    emptyProject(): Project {
-        return {
-            id: '',
+    openNew() {
+        this.project = {
             name: '',
             description: '',
             startDate: new Date(),
-            endDate: new Date(),
-            status: 'PLANNING',
-            teams: [],
-            tasks: []
+            endDate: new Date(new Date().setMonth(new Date().getMonth() + 1)),
+            status: 'PLANNED',
+            ownerId: 0,
+            departmentId: 0
         };
-    }
-
-    emptyTask(): Task {
-        return {
-            id: '',
-            title: '',
-            description: '',
-            status: 'NOT_STARTED',
-            priority: 'MEDIUM',
-            dueDate: new Date(),
-            assignedTo: [],
-            projectId: '',
-        };
-    }
-
-    emptyTeam(): Team {
-        return {
-            id: '',
-            name: '',
-            members: []
-        };
-    }
-
-    openNewProject() {
-        this.project = this.emptyProject();
         this.projectDialog = true;
     }
 
-    openNewTask(project: Project) {
-        this.task = this.emptyTask();
-        this.task.projectId = project.id;
-        this.taskDialog = true;
+    editProject(project: any) {
+        this.project = { ...project };
+        this.projectDialog = true;
     }
 
-    openNewTeam() {
-        this.team = this.emptyTeam();
-        this.teamDialog = true;
+    confirmDelete(project: any) {
+        this.confirmationService.confirm({
+            message: 'Are you sure you want to delete this project?',
+            header: 'Confirm Deletion',
+            icon: 'pi pi-exclamation-triangle',
+            acceptLabel: 'Delete',
+            rejectLabel: 'Cancel',
+            acceptButtonStyleClass: 'p-button-danger',
+            rejectButtonStyleClass: 'p-button-secondary',
+            accept: () => {
+                this.deleteProject(project);
+            }
+        });
+    }
+
+    deleteProject(project: any) {
+        this.loading.set(true);
+
+        this.projectService.deleteProject(project.id).subscribe({
+            next: () => {
+                this.messageService.add({
+                    severity: 'success',
+                    summary: 'Success',
+                    detail: 'Project deleted successfully',
+                    life: 3000
+                });
+                this.projects.update(projects => projects.filter(p => p.id !== project.id));
+            },
+            error: (err) => {
+                let errorDetail = 'Failed to delete project';
+                if (err.status === 403) {
+                    errorDetail = 'You lack permissions to delete projects';
+                } else if (err.status === 404) {
+                    errorDetail = 'Project not found';
+                }
+
+                this.messageService.add({
+                    severity: 'error',
+                    summary: 'Error',
+                    detail: errorDetail,
+                    life: 3000
+                });
+            },
+            complete: () => {
+                this.loading.set(false);
+                this.deleteProjectDialog = false;
+                this.projectToDelete = null;
+            }
+        });
     }
 
     saveProject() {
-        // Implementation for saving project
-    }
+        this.loading.set(true);
 
-    saveTask() {
-        // Implementation for saving task
-    }
-
-    saveTeam() {
-        // Implementation for saving team
-    }
-
-    deleteProject(project: Project) {
-        // Implementation for deleting project
-    }
-
-    deleteTask(task: Task) {
-        // Implementation for deleting task
-    }
-
-    deleteTeam(team: Team) {
-        // Implementation for deleting team
+        if (this.project.id) {
+            // Update existing project
+            this.projectService.updateProject(this.project).subscribe({
+                next: () => {
+                    this.messageService.add({
+                        severity: 'success',
+                        summary: 'Success',
+                        detail: 'Project updated',
+                        life: 3000
+                    });
+                    this.loadProjects();
+                    this.projectDialog = false;
+                },
+                error: (err) => {
+                    this.messageService.add({
+                        severity: 'error',
+                        summary: 'Error',
+                        detail: 'Failed to update project',
+                        life: 3000
+                    });
+                    this.loading.set(false);
+                }
+            });
+        } else {
+            // Create new project
+            this.projectService.createProject(this.project).subscribe({
+                next: () => {
+                    this.messageService.add({
+                        severity: 'success',
+                        summary: 'Success',
+                        detail: 'Project created',
+                        life: 3000
+                    });
+                    this.loadProjects();
+                    this.projectDialog = false;
+                },
+                error: (err) => {
+                    this.messageService.add({
+                        severity: 'error',
+                        summary: 'Error',
+                        detail: 'Failed to create project',
+                        life: 3000
+                    });
+                    this.loading.set(false);
+                }
+            });
+        }
     }
 
     hideDialog() {
         this.projectDialog = false;
-        this.taskDialog = false;
-        this.teamDialog = false;
     }
-    editProject(project: Project) {
-        this.project = { ...project };
-        this.projectDialog = true;
+
+    viewProject(project: any) {
+        this.router.navigate(['/projects', project.id]);
     }
-    getSeverity(status: string) {
+
+    getSeverity(status: string): 'success' | 'info' | 'warn' | 'danger' {
         switch (status) {
             case 'COMPLETED':
                 return 'success';
@@ -247,10 +248,21 @@ export class ProjectManagementComponent {
                 return 'info';
             case 'ON_HOLD':
                 return 'warn';
-            case 'PLANNING':
-                return 'secondary';
+            case 'PLANNED':
+                return 'danger';
             default:
                 return 'danger';
         }
+    }
+
+    calculateProgress(project: any): number {
+        if (!project.tasks || project.tasks.length === 0) return 0;
+
+        const completed = project.tasks.filter((t: any) => t.status === 'COMPLETED').length;
+        return Math.round((completed / project.tasks.length) * 100);
+    }
+
+    refreshProjects() {
+        this.loadProjects();
     }
 }

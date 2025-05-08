@@ -7,7 +7,7 @@ import { PasswordModule } from 'primeng/password';
 import { ToastModule } from 'primeng/toast';
 import { AuthService } from '../../pages/service/auth.service';
 import { Router } from '@angular/router';
-
+import { HttpErrorResponse } from '@angular/common/http';
 
 @Component({
     standalone: true,
@@ -26,6 +26,7 @@ export class LoginComponent {
     email = '';
     password = '';
     checked: boolean = false;
+    isLoading = false;
 
     constructor(
         private authService: AuthService,
@@ -33,17 +34,22 @@ export class LoginComponent {
         private messageService: MessageService
     ) { }
 
-    isLoading = false;
     login() {
         this.isLoading = true;
-        this.authService.login(this.email, this.password).subscribe({
-            next: () => {
+        this.authService.login({ email: this.email, password: this.password }).subscribe({
+            next: (response) => {
                 this.isLoading = false;
-                console.log('Login successful, navigating...');
-                this.router.navigate(['/dashboard']);
-                //this.router.navigate(['/']);
+
+                const token = response.token;
+                const role = this.authService.decodeToken(token)?.role;
+
+                const redirectUrl = role === 'ADMIN'
+                    ? '/admin/dashboard'
+                    : '/dashboard';
+
+                this.router.navigate([redirectUrl]);
             },
-            error: () => {
+            error: (error) => {
                 this.isLoading = false;
                 this.messageService.add({
                     severity: 'error',

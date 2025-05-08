@@ -1,171 +1,138 @@
-<div class="grid">
-    <!-- Projects Section -->
-    <div class="col-12">
-        <p-card header="Projects">
-            <p-toolbar>
-                <ng-template pTemplate="left">
-                    <p-button label="New Project" icon="pi pi-plus" (click)="openNewProject()"></p-button>
-                </ng-template>
-                <ng-template pTemplate="right">
-                    <p-button label="New Team" icon="pi pi-users" (click)="openNewTeam()"></p-button>
-                </ng-template>
-            </p-toolbar>
+<p-toolbar styleClass="mb-6">
+    <ng-template #start>
+        <p-button label="New Project" icon="pi pi-plus" severity="secondary" class="mr-2" (onClick)="openNew()" />
+        <!-- <p-button label="New Team" icon="pi pi-users" severity="secondary" class="mr-2" (onClick)="openNewTeam()" /> -->
+    </ng-template>
 
-            <p-table [value]="projects()" [paginator]="true" [rows]="10" [rowsPerPageOptions]="[5,10,25]"
-                selectionMode="multiple" [(selection)]="selectedProjects" dataKey="id">
-                <ng-template pTemplate="header">
-                    <tr>
-                        <th style="width: 3rem">
-                            <p-tableHeaderCheckbox></p-tableHeaderCheckbox>
-                        </th>
-                        <th pSortableColumn="name">Name <p-sortIcon field="name"></p-sortIcon></th>
-                        <th>Description</th>
-                        <th pSortableColumn="startDate">Start Date <p-sortIcon field="startDate"></p-sortIcon></th>
-                        <th pSortableColumn="endDate">End Date <p-sortIcon field="endDate"></p-sortIcon></th>
-                        <th pSortableColumn="status">Status <p-sortIcon field="status"></p-sortIcon></th>
-                        <th>Teams</th>
-                        <th>Tasks</th>
-                        <th>Actions</th>
-                    </tr>
-                </ng-template>
-                <ng-template pTemplate="body" let-project>
-                    <tr>
-                        <td>
-                            <p-tableCheckbox [value]="project"></p-tableCheckbox>
-                        </td>
-                        <td>{{project.name}}</td>
-                        <td>{{project.description | slice:0:50}}...</td>
-                        <td>{{project.startDate | date}}</td>
-                        <td>{{project.endDate | date}}</td>
-                        <td>
-                            <p-tag [value]="project.status" [severity]="getSeverity(project.status)"></p-tag>
-                        </td>
-                        <td>{{project.teams.length}}</td>
-                        <td>{{project.tasks.length}}</td>
-                        <td>
-                            <p-button icon="pi pi-pencil" pTooltip="Edit" tooltipPosition="top"
-                                (click)="editProject(project)"></p-button>
-                            <p-button icon="pi pi-trash" pTooltip="Delete" tooltipPosition="top" severity="danger"
-                                (click)="deleteProject(project)"></p-button>
-                            <p-button icon="pi pi-plus" pTooltip="Add Task" tooltipPosition="top" severity="secondary"
-                                (click)="openNewTask(project)"></p-button>
-                        </td>
-                    </tr>
-                </ng-template>
-            </p-table>
-        </p-card>
-    </div>
+    <ng-template #end>
+        <!-- <p-button label="Export" icon="pi pi-upload" severity="secondary" (onClick)="exportCSV()" /> -->
+        <p-button icon="pi pi-filter" styleClass="p-button-text ml-2" pTooltip="Filter projects"
+            tooltipPosition="bottom" />
+        <p-button icon="pi pi-refresh" styleClass="p-button-text ml-2" pTooltip="Refresh data" tooltipPosition="bottom"
+            (click)="refreshProjects()" />
+    </ng-template>
+</p-toolbar>
 
-    <!-- Project Dialog -->
-    <p-dialog [(visible)]="projectDialog" [style]="{width: '600px'}" header="Project Details" [modal]="true">
-        <div class="p-fluid">
-            <div class="field">
-                <label for="projectName">Name</label>
-                <input pInputText id="projectName" [(ngModel)]="project.name" required />
+<p-table #dt [value]="projects()" [rows]="10" [columns]="cols" [paginator]="true"
+    [globalFilterFields]="['name', 'description', 'status', 'manager']" [tableStyle]="{ 'min-width': '75rem' }"
+    [(selection)]="selectedProjects" [rowHover]="true" dataKey="id"
+    currentPageReportTemplate="Showing {first} to {last} of {totalRecords} projects" [showCurrentPageReport]="true"
+    [rowsPerPageOptions]="[10, 20, 30]">
+    <ng-template #caption>
+        <div class="flex items-center justify-between">
+            <h5 class="m-0">Manage Projects</h5>
+            <p-iconfield>
+                <p-inputicon styleClass="pi pi-search" />
+                <!-- <input pInputText type="text" (input)="onGlobalFilter(dt, $event)" placeholder="Search..." /> -->
+            </p-iconfield>
+        </div>
+    </ng-template>
+    <ng-template #header>
+        <tr>
+            <th style="width: 3rem">
+                <p-tableHeaderCheckbox />
+            </th>
+            <th pSortableColumn="name" style="min-width:12rem">
+                Project
+                <p-sortIcon field="name" />
+            </th>
+            <th style="min-width:16rem">Description</th>
+            <th pSortableColumn="startDate" style="min-width:10rem">
+                Start Date
+                <p-sortIcon field="startDate" />
+            </th>
+            <th pSortableColumn="endDate" style="min-width:10rem">
+                End Date
+                <p-sortIcon field="endDate" />
+            </th>
+            <th pSortableColumn="status" style="min-width:10rem">
+                Status
+                <p-sortIcon field="status" />
+            </th>
+            <th style="min-width: 12rem">Progress</th>
+            <th style="min-width: 12rem"></th>
+        </tr>
+    </ng-template>
+    <ng-template #body let-project>
+        <tr>
+            <td style="width: 3rem">
+                <p-tableCheckbox [value]="project" />
+            </td>
+            <td style="min-width: 12rem">
+                <div class="font-bold">{{ project.name }}</div>
+                <div class="text-sm text-color-secondary">#{{ project.id }}</div>
+            </td>
+            <td style="min-width: 16rem">
+                {{ project.description | slice:0:50 }}{{ project.description.length > 50 ? '...' : '' }}
+            </td>
+            <td>{{ project.startDate | date:'shortDate' }}</td>
+            <td>{{ project.endDate | date:'shortDate' }}</td>
+            <td>
+                <p-tag [value]="project.status" [severity]="getSeverity(project.status)" />
+            </td>
+            <td>
+                <p-progressBar [value]="project.progress" [showValue]="false"></p-progressBar>
+                <div class="flex justify-between mt-1">
+                    <span class="text-sm">{{ project.progress }}%</span>
+                    <span class="text-sm">{{ project.completedTasks }}/{{ project.totalTasks }} tasks</span>
+                </div>
+            </td>
+            <td>
+                <!-- <p-button icon="pi pi-eye" class="mr-2" [rounded]="true" [outlined]="true"
+                    (click)="viewProject(project)" /> -->
+                <p-button icon="pi pi-pencil" class="mr-2" [rounded]="true" [outlined]="true"
+                    (click)="editProject(project)" />
+                <p-button icon="pi pi-trash" severity="danger" [rounded]="true" [outlined]="true"
+                    (click)="confirmDelete(project)" />
+            </td>
+        </tr>
+    </ng-template>
+</p-table>
+
+<p-dialog [(visible)]="projectDialog" [style]="{ width: '550px' }" header="Project Details" [modal]="true">
+    <ng-template #content>
+        <div class="flex flex-col gap-6">
+            <div>
+                <label for="name" class="block font-bold mb-3">Project Name</label>
+                <input type="text" pInputText id="name" [(ngModel)]="project.name" required autofocus />
             </div>
 
-            <div class="field">
-                <label for="projectDescription">Description</label>
-                <textarea pInputTextarea id="projectDescription" [(ngModel)]="project.description" rows="3"></textarea>
+            <div>
+                <label for="description" class="block font-bold mb-3">Description</label>
+                <textarea pInputTextarea id="description" [(ngModel)]="project.description" rows="3"></textarea>
             </div>
 
             <div class="grid">
-                <div class="field col-6">
-                    <label for="startDate">Start Date</label>
-                    <p-calendar id="startDate" [(ngModel)]="project.startDate" dateFormat="yy-mm-dd"></p-calendar>
+                <div class="col-6">
+                    <label for="startDate" class="block font-bold mb-3">Start Date</label>
+                    <p-calendar id="startDate" [(ngModel)]="project.startDate" dateFormat="yy-mm-dd"
+                        [showIcon]="true"></p-calendar>
                 </div>
-                <div class="field col-6">
-                    <label for="endDate">End Date</label>
-                    <p-calendar id="endDate" [(ngModel)]="project.endDate" dateFormat="yy-mm-dd"></p-calendar>
+                <div class="col-6">
+                    <label for="endDate" class="block font-bold mb-3">End Date</label>
+                    <p-calendar id="endDate" [(ngModel)]="project.endDate" dateFormat="yy-mm-dd"
+                        [showIcon]="true"></p-calendar>
                 </div>
             </div>
 
-            <div class="field">
-                <label for="projectStatus">Status</label>
-                <p-dropdown [options]="statusOptions" [(ngModel)]="project.status" optionLabel="label"
-                    optionValue="value"></p-dropdown>
+            <div>
+                <label for="status" class="block font-bold mb-3">Status</label>
+                <p-dropdown [options]="statusOptions" [(ngModel)]="project.status" placeholder="Select Status"
+                    inputId="status"></p-dropdown>
             </div>
 
-            <div class="field">
-                <label>Teams</label>
-                <p-multiSelect [options]="teams()" [(ngModel)]="project.teams" optionLabel="name" [filter]="true"
-                    placeholder="Select Teams">
-                    <ng-template let-team pTemplate="item">
-                        <div>{{team.name}} ({{team.members.length}} members)</div>
-                    </ng-template>
-                </p-multiSelect>
+            <div>
+                <label for="manager" class="block font-bold mb-3">Project Manager</label>
+                <!-- <p-dropdown [options]="managers()" [(ngModel)]="project.manager" placeholder="Select Manager"
+                    inputId="manager" optionLabel="name"></p-dropdown> -->
             </div>
         </div>
+    </ng-template>
 
-        <ng-template pTemplate="footer">
-            <p-button label="Cancel" icon="pi pi-times" (click)="hideDialog()"></p-button>
-            <p-button label="Save" icon="pi pi-check" (click)="saveProject()"></p-button>
-        </ng-template>
-    </p-dialog>
+    <ng-template #footer>
+        <p-button label="Cancel" icon="pi pi-times" text (click)="hideDialog()" />
+        <p-button label="Save" icon="pi pi-check" (click)="saveProject()" />
+    </ng-template>
+</p-dialog>
 
-    <!-- Task Dialog -->
-    <p-dialog [(visible)]="taskDialog" [style]="{width: '600px'}" header="Task Details" [modal]="true">
-        <div class="p-fluid">
-            <div class="field">
-                <label for="taskTitle">Title</label>
-                <input pInputText id="taskTitle" [(ngModel)]="task.title" required />
-            </div>
-
-            <div class="field">
-                <label for="taskDescription">Description</label>
-                <textarea pInputTextarea id="taskDescription" [(ngModel)]="task.description" rows="3"></textarea>
-            </div>
-
-            <div class="grid">
-                <div class="field col-4">
-                    <label for="taskStatus">Status</label>
-                    <p-dropdown [options]="taskStatusOptions" [(ngModel)]="task.status" optionLabel="label"
-                        optionValue="value"></p-dropdown>
-                </div>
-                <div class="field col-4">
-                    <label for="taskPriority">Priority</label>
-                    <p-dropdown [options]="priorityOptions" [(ngModel)]="task.priority" optionLabel="label"
-                        optionValue="value"></p-dropdown>
-                </div>
-                <div class="field col-4">
-                    <label for="dueDate">Due Date</label>
-                    <p-calendar id="dueDate" [(ngModel)]="task.dueDate" dateFormat="yy-mm-dd"></p-calendar>
-                </div>
-            </div>
-
-            <div class="field">
-                <label>Assign To</label>
-                <p-multiSelect [options]="employees()" [(ngModel)]="task.assignedTo" optionLabel="name" [filter]="true"
-                    placeholder="Select Employees">
-                </p-multiSelect>
-            </div>
-        </div>
-
-        <ng-template pTemplate="footer">
-            <p-button label="Cancel" icon="pi pi-times" (click)="hideDialog()"></p-button>
-            <p-button label="Save" icon="pi pi-check" (click)="saveTask()"></p-button>
-        </ng-template>
-    </p-dialog>
-
-    <!-- Team Dialog -->
-    <p-dialog [(visible)]="teamDialog" [style]="{width: '600px'}" header="Team Details" [modal]="true">
-        <div class="p-fluid">
-            <div class="field">
-                <label for="teamName">Team Name</label>
-                <input pInputText id="teamName" [(ngModel)]="team.name" required />
-            </div>
-
-            <div class="field">
-                <label>Team Members</label>
-                <p-multiSelect [options]="employees()" [(ngModel)]="team.members" optionLabel="name" [filter]="true"
-                    placeholder="Select Members">
-                </p-multiSelect>
-            </div>
-        </div>
-
-        <ng-template pTemplate="footer">
-            <p-button label="Cancel" icon="pi pi-times" (click)="hideDialog()"></p-button>
-            <p-button label="Save" icon="pi pi-check" (click)="saveTeam()"></p-button>
-        </ng-template>
-    </p-dialog>
-</div>
+<p-confirmdialog [style]="{ width: '450px' }" />

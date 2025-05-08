@@ -16,7 +16,6 @@ interface Report {
     generatedDate: Date;
     downloadCount: number;
 }
-
 @Component({
     selector: 'app-reports',
     standalone: true,
@@ -39,19 +38,16 @@ export class ReportsComponent {
     dateRange: Date[] = [new Date(), new Date()];
     chartData: any;
     chartOptions: any;
-
     reportTypes = [
         { label: 'Payroll Reports', value: 'PAYROLL' },
         { label: 'Attendance Reports', value: 'ATTENDANCE' },
         { label: 'Leave Reports', value: 'LEAVE' },
         { label: 'Tax Reports', value: 'TAX' }
     ];
-
     constructor() {
         this.initializeChart();
         this.loadSampleData();
     }
-
     initializeChart() {
         this.chartData = {
             labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
@@ -65,7 +61,6 @@ export class ReportsComponent {
                 }
             ]
         };
-
         this.chartOptions = {
             responsive: true,
             scales: {
@@ -75,7 +70,6 @@ export class ReportsComponent {
             }
         };
     }
-
     loadSampleData() {
         const sampleData: Report[] = [
             {
@@ -105,7 +99,6 @@ export class ReportsComponent {
         ];
         this.reports.set(sampleData);
     }
-
     generateReport() {
         const newReport: Report = {
             id: Math.random().toString(36).substring(2, 9),
@@ -115,10 +108,8 @@ export class ReportsComponent {
             generatedDate: new Date(),
             downloadCount: 0
         };
-
         this.reports.set([newReport, ...this.reports()]);
     }
-
     getPeriodLabel(): string {
         if (this.dateRange[0] && this.dateRange[1]) {
             if (this.dateRange[0].getMonth() === this.dateRange[1].getMonth()) {
@@ -128,7 +119,6 @@ export class ReportsComponent {
         }
         return 'Custom Period';
     }
-
     downloadReport(report: Report) {
         // In a real app, this would trigger a file download
         report.downloadCount++;

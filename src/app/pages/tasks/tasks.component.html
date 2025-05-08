@@ -1,99 +1,125 @@
-<div class="card">
-    <p-toast></p-toast>
-    <p-confirmDialog></p-confirmDialog>
+<p-toolbar styleClass="mb-6">
+    <ng-template #start>
+        <p-button label="New Task" icon="pi pi-plus" severity="secondary" class="mr-2" (onClick)="openNew()" />
+    </ng-template>
 
-    <p-toolbar>
-        <div class="p-toolbar-group-start">
-            <button pButton pRipple label="New Task" icon="pi pi-plus" class="p-button-success mr-2"
-                (click)="openNew()"></button>
+    <ng-template #end>
+        <p-button label="Export" icon="pi pi-upload" severity="secondary" (onClick)="exportCSV()" />
+    </ng-template>
+</p-toolbar>
+
+<p-table #dt [value]="tasks()" [rows]="10" [columns]="cols" [paginator]="true"
+    [globalFilterFields]="['title', 'description', 'status', 'assignedTo.name']" [tableStyle]="{ 'min-width': '75rem' }"
+    [(selection)]="selectedTasks" [rowHover]="true" dataKey="id"
+    currentPageReportTemplate="Showing {first} to {last} of {totalRecords} tasks" [showCurrentPageReport]="true"
+    [rowsPerPageOptions]="[10, 20, 30]">
+    <ng-template #caption>
+        <div class="flex items-center justify-between">
+            <h5 class="m-0">Manage Tasks</h5>
+            <p-iconfield>
+                <p-inputicon styleClass="pi pi-search" />
+                <input pInputText type="text" (input)="onGlobalFilter(dt, $event)" placeholder="Search..." />
+            </p-iconfield>
         </div>
-    </p-toolbar>
+    </ng-template>
+    <ng-template #header>
+        <tr>
+            <th style="width: 3rem">
+                <p-tableHeaderCheckbox />
+            </th>
+            <th pSortableColumn="title" style="min-width:12rem">
+                Title
+                <p-sortIcon field="title" />
+            </th>
+            <th style="min-width:16rem">Description</th>
+            <th pSortableColumn="dueDate" style="min-width:10rem">
+                Due Date
+                <p-sortIcon field="dueDate" />
+            </th>
+            <th pSortableColumn="priority" style="min-width:10rem">
+                Priority
+                <p-sortIcon field="priority" />
+            </th>
+            <th pSortableColumn="status" style="min-width:10rem">
+                Status
+                <p-sortIcon field="status" />
+            </th>
+            <th pSortableColumn="assignedTo.name" style="min-width:12rem">
+                Assigned To
+                <p-sortIcon field="assignedTo.name" />
+            </th>
+            <th style="min-width: 12rem"></th>
+        </tr>
+    </ng-template>
+    <ng-template #body let-task>
+        <tr>
+            <td style="width: 3rem">
+                <p-tableCheckbox [value]="task" />
+            </td>
+            <td style="min-width: 12rem">{{ task.title }}</td>
+            <td style="min-width: 16rem">{{ task.description | slice:0:50 }}{{ task.description.length > 50 ? '...' : ''
+                }}</td>
+            <td>{{ task.dueDate | date:'shortDate' }}</td>
+            <td>
+                <p-tag [value]="task.priority" [severity]="getPrioritySeverity(task.priority)" />
+            </td>
+            <td>
+                <p-tag [value]="task.status" [severity]="getStatusSeverity(task.status)" />
+            </td>
+            <td>{{ task.assignedTo.name }}</td>
+            <td>
+                <p-button icon="pi pi-pencil" class="mr-2" [rounded]="true" [outlined]="true"
+                    (click)="editTask(task)" />
+                <p-button icon="pi pi-trash" severity="danger" [rounded]="true" [outlined]="true"
+                    (click)="deleteTask(task)" />
+            </td>
+        </tr>
+    </ng-template>
+</p-table>
 
-    <p-table [value]="tasks()" [paginator]="true" [rows]="10" [showCurrentPageReport]="true"
-        currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries"
-        [rowsPerPageOptions]="[10,25,50]" styleClass="p-datatable-gridlines" [tableStyle]="{ 'min-width': '50rem' }">
-
-        <ng-template pTemplate="header">
-            <tr>
-                <th style="width: 3rem"></th>
-                <th>Title</th>
-                <th>Description</th>
-                <th>Due Date</th>
-                <th>Priority</th>
-                <th>Status</th>
-                <th>Assigned To</th>
-                <th>Actions</th>
-            </tr>
-        </ng-template>
-
-        <ng-template pTemplate="body" let-task>
-            <tr>
-                <td>
-                    <p-checkbox [binary]="true" [ngModel]="task.completed"
-                        (onChange)="toggleTaskCompletion(task)"></p-checkbox>
-                </td>
-                <td>{{task.title}}</td>
-                <td>{{task.description}}</td>
-                <td>{{task.dueDate | date}}</td>
-                <td>{{task.priority}}</td>
-                <td>
-                    <p-tag [value]="task.status" [severity]="getSeverity(task.status)"></p-tag>
-                </td>
-                <td>{{task.assignedTo}}</td>
-                <td>
-                    <button pButton pRipple icon="pi pi-pencil" class="p-button-rounded p-button-success mr-2"
-                        (click)="editTask(task)"></button>
-                    <button pButton pRipple icon="pi pi-trash" class="p-button-rounded p-button-danger"
-                        (click)="deleteTask(task)"></button>
-                </td>
-            </tr>
-        </ng-template>
-    </p-table>
-</div>
-
-<p-dialog [(visible)]="taskDialog" [style]="{width: '450px'}" header="Task Details" [modal]="true">
-    <form *ngIf="task" (ngSubmit)="saveTask()">
-        <div class="p-fluid">
-            <div class="p-field">
-                <label for="title">Title</label>
-                <input pInputText id="title" [(ngModel)]="task.title" name="title" required />
+<p-dialog [(visible)]="taskDialog" [style]="{ width: '550px' }" header="Task Details" [modal]="true">
+    <ng-template #content>
+        <div class="flex flex-col gap-6">
+            <div>
+                <label for="title" class="block font-bold mb-3">Title</label>
+                <input type="text" pInputText id="title" [(ngModel)]="task.title" required autofocus />
             </div>
 
-            <div class="p-field">
-                <label for="description">Description</label>
-                <textarea pInputTextarea id="description" [(ngModel)]="task.description" name="description"
-                    rows="3"></textarea>
+            <div>
+                <label for="description" class="block font-bold mb-3">Description</label>
+                <textarea pInputTextarea id="description" [(ngModel)]="task.description" rows="3"></textarea>
             </div>
 
-            <div class="p-field">
-                <label for="dueDate">Due Date</label>
-                <p-calendar id="dueDate" [(ngModel)]="task.dueDate" name="dueDate" [showIcon]="true"
-                    required></p-calendar>
+            <div>
+                <label for="dueDate" class="block font-bold mb-3">Due Date</label>
+                <p-calendar id="dueDate" [(ngModel)]="task.dueDate" [showIcon]="true"
+                    dateFormat="yy-mm-dd"></p-calendar>
             </div>
 
-            <div class="p-field">
-                <label for="priority">Priority</label>
-                <p-dropdown id="priority" [options]="priorities" [(ngModel)]="task.priority" name="priority"
-                    optionLabel="label" optionValue="value"></p-dropdown>
+            <div>
+                <label for="priority" class="block font-bold mb-3">Priority</label>
+                <p-dropdown [options]="priorities" [(ngModel)]="task.priority" placeholder="Select Priority"
+                    inputId="priority"></p-dropdown>
             </div>
 
-            <div class="p-field">
-                <label for="status">Status</label>
-                <p-dropdown id="status" [options]="statuses" [(ngModel)]="task.status" name="status" optionLabel="label"
-                    optionValue="value"></p-dropdown>
+            <div>
+                <label for="status" class="block font-bold mb-3">Status</label>
+                <p-dropdown [options]="statuses" [(ngModel)]="task.status" placeholder="Select Status"
+                    inputId="status"></p-dropdown>
             </div>
 
-            <div class="p-field">
-                <label for="assignedTo">Assigned To</label>
-                <p-dropdown id="assignedTo" [options]="teamMembers" [(ngModel)]="task.assignedTo" name="assignedTo"
-                    [filter]="true" filterBy="label" placeholder="Select Team Member"></p-dropdown>
+            <div>
+                <label for="assignedTo" class="block font-bold mb-3">Assigned To</label>
+                <p-dropdown [options]="teamMembers" [(ngModel)]="task.assignedTo" optionLabel="name"
+                    placeholder="Select Team Member" inputId="assignedTo"></p-dropdown>
             </div>
         </div>
+    </ng-template>
 
-        <div class="p-dialog-footer">
-            <button pButton pRipple type="button" label="Cancel" icon="pi pi-times" class="p-button-text"
-                (click)="taskDialog = false"></button>
-            <button pButton pRipple type="submit" label="Save" icon="pi pi-check" class="p-button-text"></button>
-        </div>
-    </form>
+    <ng-template #footer>
+        <p-button label="Cancel" icon="pi pi-times" text (click)="hideDialog()" />
+        <p-button label="Save" icon="pi pi-check" (click)="saveTask()" />
+    </ng-template>
 </p-dialog>
+
+<p-confirmdialog [style]="{ width: '450px' }" />

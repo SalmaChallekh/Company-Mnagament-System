@@ -60,8 +60,6 @@ interface ExportColumn {
         <p-toolbar styleClass="mb-6">
             <ng-template #start>
                 <p-button label="New" icon="pi pi-plus" severity="secondary" class="mr-2" (onClick)="openNew()" />
-                <p-button severity="secondary" label="Delete" icon="pi pi-trash" outlined
-                    (onClick)="deleteSelectedEmployees()" [disabled]="!selectedEmployees || !selectedEmployees.length" />
             </ng-template>
 
             <ng-template #end>

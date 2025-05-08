@@ -1,20 +1,25 @@
-import { Component, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Component, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { TableModule } from 'primeng/table';
+import { TagModule } from 'primeng/tag';
 import { ButtonModule } from 'primeng/button';
-import { CardModule } from 'primeng/card';
-import { DropdownModule } from 'primeng/dropdown';
-import { CalendarModule } from 'primeng/calendar';
+import { ToolbarModule } from 'primeng/toolbar';
+import { DialogModule } from 'primeng/dialog';
 import { InputTextModule } from 'primeng/inputtext';
 import { InputTextarea } from 'primeng/inputtextarea';
-import { CheckboxModule } from 'primeng/checkbox';
-import { DialogModule } from 'primeng/dialog';
-import { TagModule } from 'primeng/tag';
-import { ConfirmationService, MessageService } from 'primeng/api';
+import { CalendarModule } from 'primeng/calendar';
+import { DropdownModule } from 'primeng/dropdown';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
-import { ToastModule } from 'primeng/toast';
-import { ToolbarModule } from 'primeng/toolbar';
+import { IconFieldModule } from 'primeng/iconfield';
+import { InputIconModule } from 'primeng/inputicon';
+import { ConfirmationService, MessageService } from 'primeng/api';
+
+interface TeamMember {
+    id: string;
+    name: string;
+    role: string;
+}
 
 interface Task {
     id: string;
@@ -22,41 +27,48 @@ interface Task {
     description: string;
     dueDate: Date;
     priority: 'LOW' | 'MEDIUM' | 'HIGH';
-    status: 'TODO' | 'IN_PROGRESS' | 'COMPLETED' | 'OVERDUE';
-    assignedTo: string;
-    completed: boolean;
+    status: 'NOT_STARTED' | 'IN_PROGRESS' | 'COMPLETED' | 'BLOCKED';
+    assignedTo: TeamMember;
 }
 
 @Component({
-    selector: 'app-tasks',
+    selector: 'app-task-management',
     standalone: true,
     imports: [
         CommonModule,
         FormsModule,
         TableModule,
-        ButtonModule,
-        CardModule,
-        DropdownModule,
-        CalendarModule,
-        InputTextModule,
-        InputTextModule,
-        CheckboxModule,
-        DialogModule,
         TagModule,
-        ConfirmDialogModule,
-        ToastModule,
+        ButtonModule,
         ToolbarModule,
+        DialogModule,
+        InputTextModule,
+        InputTextModule,
+        CalendarModule,
+        DropdownModule,
+        ConfirmDialogModule,
+        IconFieldModule,
+        InputIconModule
     ],
     templateUrl: './tasks.component.html',
     styleUrls: ['./tasks.component.scss'],
-    providers: [ConfirmationService, MessageService]
+    providers: [MessageService, ConfirmationService]
 })
 export class TasksComponent {
     tasks = signal<Task[]>([]);
+    teamMembers: TeamMember[] = [];
     selectedTasks: Task[] = [];
     taskDialog = false;
     task: Task = this.emptyTask();
-    submitted = false;
+
+    cols = [
+        { field: 'title', header: 'Title' },
+        { field: 'description', header: 'Description' },
+        { field: 'dueDate', header: 'Due Date' },
+        { field: 'priority', header: 'Priority' },
+        { field: 'status', header: 'Status' },
+        { field: 'assignedTo.name', header: 'Assigned To' }
+    ];
 
     priorities = [
         { label: 'Low', value: 'LOW' },
@@ -65,63 +77,54 @@ export class TasksComponent {
     ];
 
     statuses = [
-        { label: 'To Do', value: 'TODO' },
+        { label: 'Not Started', value: 'NOT_STARTED' },
         { label: 'In Progress', value: 'IN_PROGRESS' },
         { label: 'Completed', value: 'COMPLETED' },
-        { label: 'Overdue', value: 'OVERDUE' }
+        { label: 'Blocked', value: 'BLOCKED' }
     ];
 
-    teamMembers = [
-        'John Doe',
-        'Jane Smith',
-        'Robert Johnson',
-        'Emily Davis',
-        'Michael Wilson'
-    ];
-
-    constructor(
-        private confirmationService: ConfirmationService,
-        private messageService: MessageService
-    ) { }
-
-    ngOnInit() {
-        this.loadSampleData();
+    ngOnInit(): void {
+        this.loadDemoData();
     }
 
-    loadSampleData() {
-        const sampleData: Task[] = [
+    loadDemoData() {
+        this.teamMembers = [
+            { id: '1', name: 'John Doe', role: 'Developer' },
+            { id: '2', name: 'Jane Smith', role: 'Designer' },
+            { id: '3', name: 'Mike Johnson', role: 'QA Engineer' }
+        ];
+
+        const demoTasks: Task[] = [
             {
                 id: '1',
-                title: 'Complete payroll processing',
-                description: 'Process payroll for June 2023',
-                dueDate: new Date(2023, 6, 5),
+                title: 'Implement authentication',
+                description: 'Create login and registration functionality with JWT support',
+                dueDate: new Date(2023, 11, 15),
                 priority: 'HIGH',
                 status: 'IN_PROGRESS',
-                assignedTo: 'John Doe',
-                completed: false
+                assignedTo: this.teamMembers[0]
             },
             {
                 id: '2',
-                title: 'Prepare quarterly reports',
-                description: 'Generate financial reports for Q2',
-                dueDate: new Date(2023, 6, 15),
+                title: 'Design dashboard UI',
+                description: 'Create mockups for the admin dashboard with responsive design',
+                dueDate: new Date(2023, 11, 10),
                 priority: 'MEDIUM',
-                status: 'TODO',
-                assignedTo: 'Jane Smith',
-                completed: false
+                status: 'COMPLETED',
+                assignedTo: this.teamMembers[1]
             },
             {
                 id: '3',
-                title: 'Update employee handbook',
-                description: 'Review and update company policies',
-                dueDate: new Date(2023, 5, 30),
+                title: 'Write API documentation',
+                description: 'Document all endpoints for the REST API with examples',
+                dueDate: new Date(2023, 11, 20),
                 priority: 'LOW',
-                status: 'OVERDUE',
-                assignedTo: 'Robert Johnson',
-                completed: false
+                status: 'NOT_STARTED',
+                assignedTo: this.teamMembers[2]
             }
         ];
-        this.tasks.set(sampleData);
+
+        this.tasks.set(demoTasks);
     }
 
     emptyTask(): Task {
@@ -131,15 +134,13 @@ export class TasksComponent {
             description: '',
             dueDate: new Date(),
             priority: 'MEDIUM',
-            status: 'TODO',
-            assignedTo: '',
-            completed: false
+            status: 'NOT_STARTED',
+            assignedTo: {} as TeamMember
         };
     }
 
     openNew() {
         this.task = this.emptyTask();
-        this.submitted = false;
         this.taskDialog = true;
     }
 
@@ -148,79 +149,67 @@ export class TasksComponent {
         this.taskDialog = true;
     }
 
-    deleteTask(task: Task) {
-        this.confirmationService.confirm({
-            message: 'Are you sure you want to delete this task?',
-            header: 'Confirm',
-            icon: 'pi pi-exclamation-triangle',
-            accept: () => {
-                this.tasks.set(this.tasks().filter(t => t.id !== task.id));
-                this.messageService.add({
-                    severity: 'success',
-                    summary: 'Successful',
-                    detail: 'Task Deleted',
-                    life: 3000
-                });
-            }
-        });
-    }
-
     saveTask() {
-        this.submitted = true;
+        const tasks = this.tasks();
 
-        if (this.task.title?.trim()) {
-            if (this.task.id) {
-                // Update existing
-                const index = this.tasks().findIndex(t => t.id === this.task.id);
-                const updatedTasks = [...this.tasks()];
-                updatedTasks[index] = this.task;
-                this.tasks.set(updatedTasks);
-
-                this.messageService.add({
-                    severity: 'success',
-                    summary: 'Successful',
-                    detail: 'Task Updated',
-                    life: 3000
-                });
-            } else {
-                // Create new
-                this.task.id = this.createId();
-                this.tasks.set([...this.tasks(), this.task]);
-                this.messageService.add({
-                    severity: 'success',
-                    summary: 'Successful',
-                    detail: 'Task Created',
-                    life: 3000
-                });
+        if (this.task.id) {
+            // Update existing task
+            const index = tasks.findIndex(t => t.id === this.task.id);
+            if (index !== -1) {
+                tasks[index] = { ...this.task };
             }
-
-            this.taskDialog = false;
-            this.task = this.emptyTask();
+        } else {
+            // Add new task
+            this.task.id = this.generateId();
+            tasks.push({ ...this.task });
         }
+
+        this.tasks.set([...tasks]);
+        this.taskDialog = false;
     }
 
-    createId(): string {
-        return Math.random().toString(36).substring(2, 9);
+    deleteTask(task: Task) {
+        this.tasks.set(this.tasks().filter(t => t.id !== task.id));
     }
 
-    getSeverity(status: string) {
+    exportCSV() {
+        // Implement CSV export functionality
+        console.log('Exporting tasks to CSV');
+    }
+
+    onGlobalFilter(table: any, event: Event) {
+        table.filterGlobal((event.target as HTMLInputElement).value, 'contains');
+    }
+    getStatusSeverity(status: string): 'success' | 'info' | 'warn' | 'danger' {
         switch (status) {
             case 'COMPLETED':
                 return 'success';
             case 'IN_PROGRESS':
                 return 'info';
-            case 'TODO':
-                return 'warn';
-            case 'OVERDUE':
+            case 'BLOCKED':
                 return 'danger';
+            case 'NOT_STARTED':
             default:
-                return undefined;
+                return 'warn';
+        }
+    }
+    getPrioritySeverity(priority: string): 'success' | 'info' | 'warn' | 'danger' | 'secondary' | 'contrast' {
+        switch (priority) {
+            case 'HIGH':
+                return 'danger';
+            case 'MEDIUM':
+                return 'warn';
+            case 'LOW':
+            default:
+                return 'success';
         }
     }
 
-    toggleTaskCompletion(task: Task) {
-        task.completed = !task.completed;
-        task.status = task.completed ? 'COMPLETED' : 'TODO';
-        this.tasks.set([...this.tasks()]);
+    hideDialog() {
+        this.taskDialog = false;
+    }
+
+    private generateId(): string {
+        return Math.random().toString(36).substring(2, 9);
     }
 }

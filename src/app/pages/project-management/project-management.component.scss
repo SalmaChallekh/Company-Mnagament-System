@@ -1,0 +1,319 @@
+/* Modern Dashboard Variables */
+.modern-dashboard {
+    --primary-color: #4f46e5;
+    --primary-light: #6366f1;
+    --secondary-color: #7c3aed;
+    --success-color: #10b981;
+    --warning-color: #f59e0b;
+    --danger-color: #ef4444;
+    --info-color: #3b82f6;
+    --text-color: #1e293b;
+    --text-light: #64748b;
+    --border-color: #e2e8f0;
+    --card-bg: #ffffff;
+    --hover-bg: #f8fafc;
+    --selected-bg: #f1f5f9;
+    --radius-sm: 6px;
+    --radius-md: 8px;
+    --radius-lg: 12px;
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    --transition: all 0.2s ease;
+}
+
+/* Base Styles */
+.modern-card {
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    border: none;
+    background: var(--card-bg);
+    transition: var(--transition);
+}
+
+.modern-card:hover {
+    box-shadow: var(--shadow-md);
+}
+
+/* Header & Actions */
+.card-header-actions {
+    display: flex;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.spacer {
+    flex: 1;
+}
+
+.modern-btn {
+    font-weight: 500;
+    letter-spacing: 0.025em;
+}
+
+/* Table Styles */
+.modern-table {
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    border: 1px solid var(--border-color);
+}
+
+.modern-table .p-datatable-thead > tr > th {
+    background-color: #f1f5f9;
+    color: var(--text-light);
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 0.5px;
+    border-color: var(--border-color);
+    padding: 0.75rem 1rem;
+    white-space: nowrap;
+}
+
+.modern-table .p-datatable-tbody > tr {
+    transition: var(--transition);
+    border-color: var(--border-color);
+}
+
+.modern-table .p-datatable-tbody > tr.row-selected {
+    background-color: var(--selected-bg);
+}
+
+.modern-table .p-datatable-tbody > tr:hover {
+    background-color: var(--hover-bg);
+}
+
+.modern-table .p-datatable-tbody > tr > td {
+    padding: 0.75rem 1rem;
+    border-color: var(--border-color);
+    vertical-align: middle;
+}
+
+/* Project Info Cells */
+.project-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.project-name {
+    font-weight: 500;
+    color: var(--text-color);
+}
+
+.project-id {
+    font-size: 0.75rem;
+    color: var(--text-light);
+}
+
+.project-description {
+    color: var(--text-light);
+    line-height: 1.5;
+    font-size: 0.875rem;
+}
+
+.read-more {
+    color: var(--primary-color);
+    cursor: pointer;
+    font-size: 0.75rem;
+    margin-top: 0.25rem;
+    display: inline-block;
+    font-weight: 500;
+}
+
+/* Timeline */
+.timeline {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.date-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.75rem;
+    color: var(--text-light);
+}
+
+.timeline-bar {
+    height: 6px;
+    background-color: #e2e8f0;
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.timeline .progress {
+    height: 100%;
+    background-color: var(--primary-color);
+    border-radius: 3px;
+    transition: width 0.5s ease;
+}
+
+.timeline .progress.danger {
+    background-color: var(--danger-color);
+}
+
+.progress-text {
+    font-size: 0.75rem;
+    color: var(--text-light);
+    text-align: center;
+}
+
+/* Status Tags */
+.status-tag {
+    border-radius: 20px;
+    padding: 0.25rem 0.75rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    min-width: 70px;
+    display: inline-block;
+    text-align: center;
+}
+
+/* Team & Task Counts */
+.team-count, .task-count {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--text-light);
+    cursor: pointer;
+    padding: 0.5rem;
+    border-radius: var(--radius-sm);
+    transition: var(--transition);
+}
+
+.team-count:hover, .task-count:hover {
+    background-color: var(--hover-bg);
+}
+
+.task-count {
+    position: relative;
+    flex-direction: column;
+    align-items: flex-start;
+    padding-bottom: 1.25rem;
+}
+
+.task-progress {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    height: 2px;
+    background-color: var(--success-color);
+    border-radius: 1px;
+}
+
+/* Action Buttons */
+.action-buttons {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.action-buttons button {
+    width: 32px;
+    height: 32px;
+}
+
+/* Empty & Loading States */
+.empty-message, .loading-message {
+    padding: 3rem 1rem;
+    text-align: center;
+}
+
+.empty-state, .loading-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    color: var(--text-light);
+}
+
+.empty-state i {
+    font-size: 3rem;
+    color: #cbd5e1;
+}
+
+.empty-state h4 {
+    margin: 0;
+    font-weight: 500;
+    color: var(--text-color);
+}
+
+.loading-state i {
+    font-size: 2rem;
+    color: var(--primary-color);
+}
+
+/* Dialog Styles */
+.modern-dialog .p-dialog-header {
+    border-bottom: 1px solid var(--border-color);
+    padding: 1.25rem 1.5rem;
+    background: var(--card-bg);
+}
+
+.modern-dialog .p-dialog-content {
+    padding: 1.5rem;
+    background: var(--card-bg);
+}
+
+.dialog-content .field {
+    margin-bottom: 1.25rem;
+}
+
+.dialog-content label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    color: var(--text-color);
+    font-size: 0.875rem;
+}
+
+.required {
+    color: var(--danger-color);
+}
+
+.modern-input, .modern-textarea {
+    width: 100%;
+    padding: 0.625rem 0.875rem;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border-color);
+    transition: var(--transition);
+    font-size: 0.875rem;
+}
+
+.modern-input::placeholder, .modern-textarea::placeholder {
+    color: #94a3b8;
+}
+
+.modern-input:focus, .modern-textarea:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+}
+
+.dialog-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
+    padding: 1rem 1.5rem;
+    border-top: 1px solid var(--border-color);
+    background: var(--card-bg);
+}
+
+/* Responsive Adjustments */
+@media (max-width: 960px) {
+    .card-header-actions {
+        gap: 0.5rem;
+    }
+
+    .modern-table .p-datatable-thead > tr > th,
+    .modern-table .p-datatable-tbody > tr > td {
+        padding: 0.5rem;
+    }
+
+    .action-buttons button {
+        width: 28px;
+        height: 28px;
+    }
+}

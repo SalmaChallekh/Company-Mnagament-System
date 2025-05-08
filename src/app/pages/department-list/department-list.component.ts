@@ -1,138 +1,241 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-
-// PrimeNG Modules
-import { ToolbarModule } from 'primeng/toolbar';
+import { ConfirmationService, MessageService } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
-import { TableModule } from 'primeng/table';
+import { ToolbarModule } from 'primeng/toolbar';
+import { TableModule, Table } from 'primeng/table';
 import { DialogModule } from 'primeng/dialog';
-import { TagModule } from 'primeng/tag';
-import { ConfirmationService } from 'primeng/api';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
+import { ToastModule } from 'primeng/toast';
+import { InputTextModule } from 'primeng/inputtext';
+import { DropdownModule } from 'primeng/dropdown';
+import { TagModule } from 'primeng/tag';
+import { SelectButtonModule } from 'primeng/selectbutton';
+import { IconFieldModule } from 'primeng/iconfield';
+import { InputIconModule } from 'primeng/inputicon';
+import { RippleModule } from 'primeng/ripple';
+import { DepartmentService } from '../../services/department.service';
 
-// Interface
-interface Department {
-    id: string;
+export interface Department {
+    id: number;
     name: string;
-    managerId: string;
+    description: string;
 }
 
-interface Employee {
-    id: string;
+export interface DepartmentRequest {
+    id:number;
     name: string;
-    departmentId: string;
+    description: string;
 }
 
+export interface DepartmentResponse {
+    id: number;
+    name: string;
+    description: string;
+}
+
+
+interface ExportColumn {
+    title: string;
+    dataKey: string;
+}
 @Component({
     selector: 'app-department-list',
     standalone: true,
     imports: [
         CommonModule,
-        FormsModule,
-        ToolbarModule,
-        ButtonModule,
         TableModule,
+        FormsModule,
+        ButtonModule,
+        RippleModule,
+        ToastModule,
+        ToolbarModule,
+        InputTextModule,
         DialogModule,
         TagModule,
-        ConfirmDialogModule
+        InputIconModule,
+        IconFieldModule,
+        ConfirmDialogModule,
+        DropdownModule,
+        SelectButtonModule
     ],
-    template: `
-    <div class="card">
-      <p-toolbar>
-        <ng-template pTemplate="left">
-          <h4>Departments</h4>
-        </ng-template>
-        <ng-template pTemplate="right">
-          <p-button label="New Department" icon="pi pi-plus"
-                  (click)="openNew()"></p-button>
-        </ng-template>
-      </p-toolbar>
-
-      <p-confirmDialog></p-confirmDialog>
-
-      <p-table [value]="departments" [paginator]="true" [rows]="10">
-        <ng-template pTemplate="header">
-          <tr>
-            <th>Name</th>
-            <th>Manager</th>
-            <th>Employee Count</th>
-            <th>Actions</th>
-          </tr>
-        </ng-template>
-        <ng-template pTemplate="body" let-dept>
-          <tr>
-            <td>{{dept.name}}</td>
-            <td>{{getManagerName(dept.managerId)}}</td>
-            <td>{{getEmployeeCount(dept.id)}}</td>
-            <td>
-              <button pButton icon="pi pi-pencil"
-                    (click)="editDepartment(dept)"></button>
-              <button pButton icon="pi pi-trash" severity="danger"
-                    (click)="deleteDepartment(dept)"></button>
-            </td>
-          </tr>
-        </ng-template>
-      </p-table>
-    </div>
-
-    <p-dialog [(visible)]="dialogVisible" header="Department Details">
-      <!-- Dialog content here -->
-    </p-dialog>
-  `,
-    styles: [`
-    .card {
-      padding: 2rem;
-      box-shadow: var(--card-shadow);
-      border-radius: 6px;
-      margin-bottom: 2rem;
-      background: var(--surface-card);
-    }
-  `],
-    providers: [ConfirmationService] // Add ConfirmationService to providers
+    templateUrl: './department-list.component.html',
+    providers: [ConfirmationService, MessageService]
 })
-export class DepartmentListComponent {
-    departments: Department[] = [
-        { id: '1', name: 'Engineering', managerId: '101' },
-        { id: '2', name: 'Marketing', managerId: '102' }
+export class DepartmentListComponent implements OnInit {
+    departments: Department[] = [];
+    selectedDepartments: Department[] = [];
+    departmentDialog: boolean = false;
+    department: DepartmentRequest = {id: 0,name: '', description: '',
+    };
+    submitted: boolean = false;
+    isLoading: boolean = false;
+
+    cols = [
+        { field: 'name', header: 'Name' },
+        { field: 'description', header: 'Description' }
     ];
 
-    employees: Employee[] = [
-        { id: '101', name: 'John Doe', departmentId: '1' },
-        { id: '102', name: 'Jane Smith', departmentId: '2' },
-        { id: '103', name: 'Mike Johnson', departmentId: '1' }
-    ];
+    exportColumns = this.cols.map(col => ({
+        title: col.header,
+        dataKey: col.field
+    }));
 
-    dialogVisible = false;
+    @ViewChild('dt') dt!: Table;
 
-    constructor(private confirmationService: ConfirmationService) { }
+    constructor(
+        private departmentService: DepartmentService,
+        private confirmationService: ConfirmationService,
+        private messageService: MessageService
+    ) { }
 
-    openNew() {
-        this.dialogVisible = true;
+    ngOnInit() {
+        this.loadDepartments();
     }
 
-    getManagerName(managerId: string): string {
-        const manager = this.employees.find(emp => emp.id === managerId);
-        return manager ? manager.name : 'Not assigned';
-    }
-
-    getEmployeeCount(departmentId: string): number {
-        return this.employees.filter(emp => emp.departmentId === departmentId).length;
-    }
-
-    editDepartment(dept: Department) {
-        console.log('Editing department:', dept);
-        this.dialogVisible = true;
-    }
-
-    deleteDepartment(dept: Department) {
-        this.confirmationService.confirm({
-            message: 'Are you sure you want to delete this department?',
-            header: 'Confirm Deletion',
-            icon: 'pi pi-exclamation-triangle',
-            accept: () => {
-                this.departments = this.departments.filter(d => d.id !== dept.id);
+    loadDepartments(): void {
+        this.isLoading = true;
+        this.departmentService.getAllDepartments().subscribe({
+            next: (departments) => {
+                this.departments = departments;
+                this.isLoading = false;
+            },
+            error: (error) => {
+                this.messageService.add({
+                    severity: 'error',
+                    summary: 'Error',
+                    detail: 'Failed to load departments'
+                });
+                this.isLoading = false;
             }
         });
+    }
+
+    openNew() {
+        this.department = {id: 0, name: '', description: '' };
+        this.submitted = false;
+        this.departmentDialog = true;
+    }
+
+    hideDialog() {
+        this.departmentDialog = false;
+        this.submitted = false;
+    }
+
+    editDepartment(department: Department) {
+        this.department = {
+            id: department.id,
+            name: department.name,
+            description: department.description
+        };
+        this.departmentDialog = true;
+    }
+
+    saveDepartment() {
+        this.submitted = true;
+
+        if (!this.department.name?.trim()) return;
+
+        this.isLoading = true;
+
+        const request: DepartmentRequest = {
+            id:this.department.id,
+            name: this.department.name,
+            description: this.department.description
+        };
+
+        const operation = this.department.id
+            ? this.departmentService.updateDepartment(this.department.id, request)
+            : this.departmentService.createDepartment(request);
+
+        operation.subscribe({
+            next: () => {
+                this.messageService.add({
+                    severity: 'success',
+                    summary: 'Successful',
+                    detail: this.department.id ? 'Department Updated' : 'Department Created',
+                    life: 3000
+                });
+                this.loadDepartments();
+                this.departmentDialog = false;
+                this.department = { id: 0,name: '', description: '' };
+                this.isLoading = false;
+            },
+            error: (error) => {
+                this.messageService.add({
+                    severity: 'error',
+                    summary: 'Error',
+                    detail: error.error?.message || 'Operation failed'
+                });
+                this.isLoading = false;
+            }
+        });
+    }
+
+    deleteDepartment(department: Department) {
+        this.confirmationService.confirm({
+            message: `Are you sure you want to delete ${department.name}?`,
+            header: 'Confirm',
+            icon: 'pi pi-exclamation-triangle',
+            accept: () => {
+                this.departmentService.deleteDepartment(department.id).subscribe({
+                    next: () => {
+                        this.messageService.add({
+                            severity: 'success',
+                            summary: 'Successful',
+                            detail: 'Department Deleted',
+                            life: 3000
+                        });
+                        this.loadDepartments();
+                    },
+                    error: (error) => {
+                        this.messageService.add({
+                            severity: 'error',
+                            summary: 'Error',
+                            detail: error.error?.message || 'Failed to delete department'
+                        });
+                    }
+                });
+            }
+        });
+    }
+
+    deleteSelectedDepartments() {
+        this.confirmationService.confirm({
+            message: 'Are you sure you want to delete the selected departments?',
+            header: 'Confirm',
+            icon: 'pi pi-exclamation-triangle',
+            accept: () => {
+                const deleteRequests = this.selectedDepartments.map(department =>
+                    this.departmentService.deleteDepartment(department.id)
+                );
+
+                // You might want to use forkJoin here for multiple parallel requests
+                deleteRequests[0].subscribe({
+                    next: () => {
+                        this.messageService.add({
+                            severity: 'success',
+                            summary: 'Successful',
+                            detail: 'Departments Deleted',
+                            life: 3000
+                        });
+                        this.loadDepartments();
+                        this.selectedDepartments = [];
+                    },
+                    error: (error) => {
+                        this.messageService.add({
+                            severity: 'error',
+                            summary: 'Error',
+                            detail: error.error?.message || 'Failed to delete departments'
+                        });
+                    }
+                });
+            }
+        });
+    }
+
+    onGlobalFilter(table: Table, event: Event) {
+        table.filterGlobal((event.target as HTMLInputElement).value, 'contains');
     }
 }

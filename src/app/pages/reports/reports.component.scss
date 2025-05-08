@@ -1,0 +1,13 @@
+/* Ensure proper right alignment */
+.grid .col-12.md\:col-4 {
+    display: flex;
+    justify-content: flex-end;
+}
+
+.p-fluid {
+    width: 100%;
+}
+
+.p-field {
+    margin-bottom: 10px;
+}

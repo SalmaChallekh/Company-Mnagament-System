@@ -34,7 +34,7 @@ interface Invoice {
         </ng-template>
         <ng-template pTemplate="right">
           <p-button label="New Invoice" icon="pi pi-plus"
-                   (click)="createInvoice()"></p-button>
+                (click)="createInvoice()"></p-button>
         </ng-template>
       </p-toolbar>
 

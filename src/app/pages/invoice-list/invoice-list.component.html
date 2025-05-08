@@ -4,8 +4,7 @@
             <h4>Invoices</h4>
         </ng-template>
         <ng-template pTemplate="right">
-            <p-button label="New Invoice" icon="pi pi-plus"
-                     (click)="createInvoice()"></p-button>
+            <p-button label="New Invoice" icon="pi pi-plus" (click)="createInvoice()"></p-button>
         </ng-template>
     </p-toolbar>
 
@@ -27,15 +26,12 @@
                 <td>{{invoice.date | date}}</td>
                 <td>{{invoice.amount | currency}}</td>
                 <td>
-                    <p-tag [value]="invoice.status"
-                          [severity]="getStatusSeverity(invoice.status)">
+                    <p-tag [value]="invoice.status" [severity]="getStatusSeverity(invoice.status)">
                     </p-tag>
                 </td>
                 <td>
-                    <button pButton icon="pi pi-eye"
-                           (click)="viewInvoice(invoice)"></button>
-                    <button pButton icon="pi pi-print"
-                           (click)="printInvoice(invoice)"></button>
+                    <button pButton icon="pi pi-eye" (click)="viewInvoice(invoice)"></button>
+                    <button pButton icon="pi pi-print" (click)="printInvoice(invoice)"></button>
                 </td>
             </tr>
         </ng-template>
