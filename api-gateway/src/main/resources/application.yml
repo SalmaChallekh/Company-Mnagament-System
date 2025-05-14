@@ -10,29 +10,11 @@ spring:
         locator:
           enabled: true
           lower-case-service-id: true
-      routes:
-        - id: cms-services
-          uri: lb://cms-services
-          predicates:
-              - Path=/api/auth/**
 
-        - id: department-service
-          uri: lb://department-service
-          predicates:
-            - Path=/api/departments/**
-          filters:
-            - StripPrefix=1
-        - id: project-service
-          uri: lb://project-service
-          predicates:
-            - Path=/api/projects/**
-          filters:
-            - StripPrefix=1
 eureka:
   client:
     service-url:
       defaultZone: http://admin:admin123@localhost:8761/eureka/
-
   instance:
     prefer-ip-address: true
     ip-address: 127.0.0.1
@@ -42,3 +24,5 @@ management:
     web:
       exposure:
         include: '*'
+
+

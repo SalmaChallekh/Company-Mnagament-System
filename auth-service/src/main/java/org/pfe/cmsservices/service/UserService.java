@@ -1,11 +1,8 @@
 package org.pfe.cmsservices.service;
 
-import com.pfe.department_service.dto.DepartmentRequest;
+
 import com.pfe.department_service.exception.DepartmentNotFoundException;
 import feign.FeignException;
-import jakarta.ws.rs.ServiceUnavailableException;
-import org.pfe.cmsservices.dto.AdminCreateUserRequest;
-import org.pfe.cmsservices.dto.DepartmentResponse;
 import org.pfe.cmsservices.entity.*;
 import org.pfe.cmsservices.enums.RoleEnum;
 import org.pfe.cmsservices.exception.DepartmentServiceUnavailableException;
@@ -13,17 +10,12 @@ import org.pfe.cmsservices.repository.DepartmentServiceClient;
 import org.pfe.cmsservices.repository.UserRepository;
 import jakarta.persistence.EntityExistsException;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.scheduling.annotation.Async;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -133,41 +125,6 @@ public class UserService {
             // Consider implementing a dead letter queue or retry mechanism
         }
     }
-   /* @Transactional
-    public void createUserProfile(String email, RoleEnum role, Long deptId) {
-        // Validate department exists
-        if (deptId != null) {
-            try {
-                boolean exists = departmentClient.departmentExists(deptId)
-                        .getBody();
-                if (!exists) {
-                    throw new DepartmentNotFoundException(deptId);
-                }
-            } catch (Exception e) {
-                //log.error("Error validating department", e);
-                throw new ServiceUnavailableException("Department service unavailable");
-            }
-        }
-
-        // Create user
-        User user = switch (role) {
-            case ROLE_MANAGER -> new Manager();
-            case ROLE_FINANCE -> new Finance();
-            case ROLE_EMPLOYEE -> new Employee();
-            case ROLE_HR -> new HumanRessource();
-            default -> new User();
-        };
-
-        user.setEmail(email);
-        user.setRole(role);
-        user.setDepartmentId(deptId);
-        user.setVerificationToken(UUID.randomUUID().toString());
-        user.setTokenExpiry(LocalDateTime.now().plusDays(2));
-
-        userRepository.save(user);
-        emailService.sendActivationEmail(email, user.getVerificationToken());
-    }*/
-
     // User completes registration
     public void completeRegistration(String token, String password) {
         User user = userRepository.findByVerificationToken(token)
@@ -176,7 +133,6 @@ public class UserService {
         if (user.getTokenExpiry().isBefore(LocalDateTime.now())) {
             throw new RuntimeException("Token expired");
         }
-
         user.setPassword(passwordEncoder.encode(password));
         user.setEnabled(true);
         user.setVerificationToken(null);

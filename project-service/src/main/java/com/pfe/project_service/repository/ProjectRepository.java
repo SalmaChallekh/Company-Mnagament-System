@@ -1,7 +1,6 @@
 package com.pfe.project_service.repository;
 
 import com.pfe.project_service.entity.Project;
-import com.pfe.project_service.entity.Task;
 import org.springframework.data.mongodb.repository.MongoRepository;
 
 import java.util.List;

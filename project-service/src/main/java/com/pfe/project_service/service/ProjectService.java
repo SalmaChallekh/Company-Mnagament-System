@@ -9,7 +9,6 @@ import com.pfe.project_service.repository.ProjectRepository;
 import com.pfe.project_service.repository.TaskRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -73,61 +72,35 @@ public class ProjectService {
         }
         return taskRepository.findByProjectId(projectId);
     }
-}
-/*@Service
-@RequiredArgsConstructor
-public class ProjectService {
-    private final ProjectRepository projectRepository;
-    private final TaskRepository taskRepository;
+    /*public Project updateProject(Project updatedProject) {
+        Project existingProject = projectRepository.findById(updatedProject.getId())
+                .orElseThrow(() -> new RuntimeException("Project not found"));
 
-    public Project createProject(Project project) {
+        // Optional: update only allowed fields
+        existingProject.setName(updatedProject.getName());
+        existingProject.setDescription(updatedProject.getDescription());
+        existingProject.setStartDate(updatedProject.getStartDate());
+        existingProject.setEndDate(updatedProject.getEndDate());
+        //existingProject.setStatus(updatedProject.setProjectStatus());
+
+
+        return projectRepository.save(existingProject);
+    }*/
+    public Project updateProject(Project project) {
+        // Verify project exists
+        if (!projectRepository.existsById(project.getId())) {
+            throw new ProjectNotFoundException("Project not found with id: " + project.getId());
+        }
+
+        // Update the project
         return projectRepository.save(project);
     }
-
-    public Project getProjectById(String id) {
-        return projectRepository.findById(id)
-                .orElseThrow(() -> new ProjectNotFoundException("Project not found with id: " + id));
-    }
-
-    public List<Project> getAllProject() {
-        return projectRepository.findAll();
-    }
-
-    public Project updateProject(String id, Project projectDetails) {
-        Project project = getProjectById(id);
-        project.setName(projectDetails.getName());
-        project.setDescription(projectDetails.getDescription());
-        project.setStartDate(projectDetails.getStartDate());
-        project.setEndDate(projectDetails.getEndDate());
-        project.setStatus(projectDetails.getStatus());
-        return projectRepository.save(project);
-    }
-
-    @Transactional
     public void deleteProject(String id) {
-        // First delete all tasks
-        taskRepository.deleteByProjectId(id);
+        // First delete all tasks associated with the project
+        List<Task> tasks = taskRepository.findByProjectId(id);
+        taskRepository.deleteAll(tasks);
+
         // Then delete the project
         projectRepository.deleteById(id);
     }
-
-    public Task addTaskToProject(String projectId, Task task) {
-        Project project = projectRepository.findById(projectId)
-                .orElseThrow(() -> new ProjectNotFoundException("Project not found"));
-
-        // Set both sides of the relationship
-        task.setProject(project);
-        Task savedTask = taskRepository.save(task);
-
-        // Update the project's task list
-        project.getTasks().add(savedTask);
-        projectRepository.save(project);
-
-        return savedTask;
-    }
-
-    public List<Task> getTasksByProjectId(String projectId) {
-        getProjectById(projectId); // Verify project exists
-        return taskRepository.findByProjectId(projectId);
-    }
-}*/
+}

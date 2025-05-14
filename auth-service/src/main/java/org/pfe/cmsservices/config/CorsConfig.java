@@ -1,3 +1,4 @@
+/*
 package org.pfe.cmsservices.config;
 
 import org.springframework.context.annotation.Configuration;
@@ -15,3 +16,4 @@ public class CorsConfig implements WebMvcConfigurer {
                 .allowCredentials(true); // Allow cookies to be sent
     }
 }
+*/

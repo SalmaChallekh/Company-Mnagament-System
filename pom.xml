@@ -14,6 +14,8 @@
         <module>api-gateway</module>
         <module>department-service</module>
         <module>project-service</module>
+        <module>finance-service</module>
+        <module>eureka-Server</module>
     </modules>
 
     <properties>

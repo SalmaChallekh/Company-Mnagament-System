@@ -3,13 +3,10 @@ package org.pfe.cmsservices.service;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
-import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
 import org.pfe.cmsservices.EmailException;
 import org.springframework.mail.MailAuthenticationException;
-import org.springframework.mail.MailException;
 import org.springframework.mail.MailSendException;
-import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
@@ -25,7 +22,7 @@ public class EmailService {
             MimeMessageHelper helper = new MimeMessageHelper(message);
             helper.setTo(to);
             helper.setSubject("Account Activation");
-            helper.setText(buildEmailContent(token), true); // HTML content
+            helper.setText(buildEmailContent(token), true);
 
             mailSender.send(message);
             log.info("Activation email sent to {}", to);
@@ -51,7 +48,7 @@ public class EmailService {
                 <head>
                     <meta charset="UTF-8">
                     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                    <title>Account Activation | Sakai</title>
+                    <title>Account Activation | Strategya2AI</title>
                     <style>
                         body {
                             font-family: 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
@@ -140,12 +137,12 @@ public class EmailService {
                 <body>
                     <div class="container">
                         <div class="header">
-                            <span class="logo">Sakai</span>
+                            <span class="logo">Strategya2AI</span>
                         </div>
                 
                         <div class="content">
-                            <h1>Welcome to Sakai LMS</h1>
-                            <p class="welcome-text">We're excited to have you join our learning community. To get started, please verify your email address:</p>
+                            <h1>Welcome to  Strategya2AI</h1>
+                            <p class="welcome-text">We're excited to have you join our  Team. To get started, please activate your account and set your own password:</p>
                 
                             <div class="button-container">
                                <a href="http://localhost:4001/api/auth/activate?token=%s" class="button">Activate your account</a>
@@ -155,12 +152,10 @@ public class EmailService {
                             <p class="highlight">For your security, this activation link will expire in 24 hours.</p>
                 
                             <div class="divider"></div>
-                
-                            <p class="support">If you didn't create this account, no further action is required. For assistance, please contact our <a href="mailto:support@sakaiproject.org" style="color: #e91e63; text-decoration: none;">support team</a>.</p>
                         </div>
                 
                         <div class="footer">
-                            <p>&copy; 2023 The Sakai Project. All rights reserved.</p>
+                            <p>&copy; 2025 Strategya2AI Project. All rights reserved.</p>
                             <p style="margin-top: 8px;">
                                 <a href="https://www.sakaiproject.org/privacy" style="color: #666; text-decoration: none; margin: 0 8px;">Privacy Policy</a>
                                 <a href="https://www.sakaiproject.org/terms" style="color: #666; text-decoration: none; margin: 0 8px;">Terms of Service</a>

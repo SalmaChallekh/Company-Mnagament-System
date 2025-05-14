@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("api/projects")
+    @RequestMapping("api/projects")
 @RequiredArgsConstructor
 public class ProjectController {
     private final ProjectService projectService;
@@ -40,15 +40,14 @@ public class ProjectController {
         return ResponseEntity.ok(projects);
     }
     @PreAuthorize("hasAnyRole('MANAGER', 'ADMIN')")
-    @PostMapping("/{projectId}/tasks")
-    public ResponseEntity<TaskDTO> addTaskToProject(
-            @PathVariable String projectId,
-            @RequestBody TaskDTO taskDTO) {
+    @PostMapping("/tasks")
+    public ResponseEntity<TaskDTO> addTaskToProject(@RequestBody TaskDTO taskDTO) {
         return new ResponseEntity<>(
-                projectService.addTaskToProject(projectId, taskDTO),
+                projectService.addTaskToProject(taskDTO.getProjectId(), taskDTO),
                 HttpStatus.CREATED
         );
     }
+
     @PreAuthorize("hasAnyRole('MANAGER', 'ADMIN')")
     @GetMapping("/{projectId}/tasks")
     public ResponseEntity<List<TaskDTO>> getTasksByProjectId(@PathVariable String projectId) {
@@ -57,24 +56,29 @@ public class ProjectController {
                 .collect(Collectors.toList());
         return ResponseEntity.ok(tasks);
     }
-}
-/*
-
-    @GetMapping
-    public ResponseEntity<List<Project>> getAllProjects() {
-        return ResponseEntity.ok(projectService.getAllProject());
-    }
-
+    @PreAuthorize("hasAnyRole('MANAGER', 'ADMIN')")
     @PutMapping("/{id}")
-    public ResponseEntity<Project> updateProject(@PathVariable String id, @RequestBody Project projectDetails) {
-        return ResponseEntity.ok(projectService.updateProject(id, projectDetails));
+   /* public ResponseEntity<?> updateProject(@PathVariable String id, @RequestBody Project project) {
+        try {
+            project.setId(id);
+            Project updated = projectService.updateProject(project);
+            return ResponseEntity.ok(new ProjectDTO(updated));
+        } catch (Exception e) {
+            e.printStackTrace(); // Log in backend
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Failed to update project: " + e.getMessage());
+        }
+    }*/
+    public ResponseEntity<ProjectDTO> updateProject(@PathVariable String id,@RequestBody Project project) {
+        project.setId(id); // Ensure the ID matches the path variable
+        return ResponseEntity.ok(
+                new ProjectDTO(projectService.updateProject(project))
+        );
     }
-
-    @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyRole('MANAGER', 'ADMIN')")
+    @DeleteMapping("/delete/{id}")
     public ResponseEntity<Void> deleteProject(@PathVariable String id) {
         projectService.deleteProject(id);
         return ResponseEntity.noContent().build();
     }
-
-
-}*/
+}

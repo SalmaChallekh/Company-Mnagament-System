@@ -1,6 +1,5 @@
 package org.pfe.cmsservices.controller;
 
-import io.jsonwebtoken.JwtException;
 import jakarta.persistence.EntityExistsException;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
@@ -13,7 +12,6 @@ import org.pfe.cmsservices.entity.User;
 
 import org.pfe.cmsservices.security.CustomUserDetails;
 import org.pfe.cmsservices.security.CustomUserDetailsService;
-import org.pfe.cmsservices.security.JwtTokenProvider;
 import org.pfe.cmsservices.service.UserService;
 import org.pfe.cmsservices.util.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,7 +22,6 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/auth")
