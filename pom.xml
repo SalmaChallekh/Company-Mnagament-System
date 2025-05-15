@@ -16,6 +16,7 @@
         <module>project-service</module>
         <module>finance-service</module>
         <module>eureka-Server</module>
+        <module>clientVendor-Service</module>
     </modules>
 
     <properties>
