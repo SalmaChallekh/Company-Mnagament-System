@@ -1,8 +1,7 @@
-package com.pfe.finance_service.config;
+package com.pfe.attendance_service.config;
 
-
-import com.pfe.finance_service.security.JwtAuthenticationFilter;
-import com.pfe.finance_service.security.JwtTokenProvider;
+import com.pfe.attendance_service.security.JwtAuthenticationFilter;
+import com.pfe.attendance_service.security.JwtTokenProvider;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -66,8 +65,8 @@ public class SecurityConfig {
                         .requestMatchers("/api/admin/departments/exists/**").permitAll()
                         .requestMatchers("/api/admin/departments/public/**").permitAll()
                         .requestMatchers("/api/auth/**").permitAll()
-                        .requestMatchers("/api/payroll/**").hasAnyRole("Finance", "ADMIN")
-
+                        .requestMatchers("/api/leaves/**").hasAnyRole("USER","EMPLOYEE", "ADMIN")
+                        .requestMatchers("api/attendance/**").hasAnyRole("Finance", "ADMIN")
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);

@@ -1,18 +1,15 @@
-package com.pfe.finance_service;
+package com.pfe.attendance_service;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
-import org.springframework.scheduling.annotation.EnableScheduling;
-
 
 @SpringBootApplication
 @EnableDiscoveryClient
-@EnableScheduling
-public class FinanceServiceApplication {
+public class AttendanceServiceApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(FinanceServiceApplication.class, args);
+		SpringApplication.run(AttendanceServiceApplication.class, args);
 	}
 
 }

@@ -17,6 +17,8 @@
         <module>finance-service</module>
         <module>eureka-Server</module>
         <module>clientVendor-Service</module>
+        <module>employee-service</module>
+        <module>attendance-service</module>
     </modules>
 
     <properties>

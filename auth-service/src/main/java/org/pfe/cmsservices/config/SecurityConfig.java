@@ -52,6 +52,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/auth/login", "/api/auth/register", "/api/auth/validateToken", "/api/auth/complete-registration").permitAll()
                         // Private endpoints (token validation required)
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/api/admin/employees/**").hasAnyRole("HR","ADMIN")
                         .requestMatchers("/api/user/**").hasRole("USER")
                         .anyRequest().authenticated()
                 )
