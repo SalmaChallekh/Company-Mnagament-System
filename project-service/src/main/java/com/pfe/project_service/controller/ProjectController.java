@@ -3,6 +3,7 @@ package com.pfe.project_service.controller;
 import com.pfe.project_service.dto.ProjectDTO;
 import com.pfe.project_service.dto.TaskDTO;
 import com.pfe.project_service.entity.Project;
+import com.pfe.project_service.repository.ProjectRepository;
 import com.pfe.project_service.service.ProjectService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -18,6 +19,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class ProjectController {
     private final ProjectService projectService;
+    private final ProjectRepository projectRepository;
     @PreAuthorize("hasAnyRole('MANAGER', 'ADMIN')")
     @PostMapping("/create")
     public ResponseEntity<ProjectDTO> createProject(@RequestBody Project project) {
@@ -32,7 +34,7 @@ public class ProjectController {
         return ResponseEntity.ok(projectService.getProjectWithTasks(id));
     }
     @PreAuthorize("hasAnyRole('MANAGER', 'ADMIN')")
-    @GetMapping("getAll")
+    @GetMapping("/getAll")
     public ResponseEntity<List<ProjectDTO>> getAllProjects() {
         List<ProjectDTO> projects = projectService.getAllProject().stream()
                 .map(ProjectDTO::new)
@@ -58,17 +60,6 @@ public class ProjectController {
     }
     @PreAuthorize("hasAnyRole('MANAGER', 'ADMIN')")
     @PutMapping("/{id}")
-   /* public ResponseEntity<?> updateProject(@PathVariable String id, @RequestBody Project project) {
-        try {
-            project.setId(id);
-            Project updated = projectService.updateProject(project);
-            return ResponseEntity.ok(new ProjectDTO(updated));
-        } catch (Exception e) {
-            e.printStackTrace(); // Log in backend
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Failed to update project: " + e.getMessage());
-        }
-    }*/
     public ResponseEntity<ProjectDTO> updateProject(@PathVariable String id,@RequestBody Project project) {
         project.setId(id); // Ensure the ID matches the path variable
         return ResponseEntity.ok(
@@ -80,5 +71,15 @@ public class ProjectController {
     public ResponseEntity<Void> deleteProject(@PathVariable String id) {
         projectService.deleteProject(id);
         return ResponseEntity.noContent().build();
+    }
+    @GetMapping("/by-department/{departmentId}")
+    public ResponseEntity<List<Project>> getProjectsByDepartment(@PathVariable Long departmentId) {
+        List<Project> projects = projectRepository.findByDepartmentId(departmentId);
+        return ResponseEntity.ok(projects);
+    }
+    @GetMapping("/by-manager/{managerId}")
+    public ResponseEntity<List<Project>> getProjectsByManager(@PathVariable Long managerId) {
+        List<Project> projects = projectRepository.findByManagerId(managerId);
+        return ResponseEntity.ok(projects);
     }
 }

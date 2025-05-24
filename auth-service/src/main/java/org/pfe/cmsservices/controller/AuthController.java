@@ -30,7 +30,7 @@ public class AuthController {
     private final JwtUtil jwtUtil;
     private final AuthenticationManager authenticationManager;
     private final CustomUserDetailsService userDetailsService;
-   // private final JwtTokenProvider jwtTokenProvider;
+
     @Autowired
     public AuthController(UserService userService, JwtUtil jwtUtil,
                           AuthenticationManager authenticationManager, CustomUserDetailsService userDetailsService) {
@@ -53,7 +53,7 @@ public class AuthController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
         }
     }
-    @GetMapping("/activate")
+    /*@GetMapping("/activate")
     public ResponseEntity<String> testActivate(@RequestParam String token) {
         try {
             // Call to user service to complete registration with the given token and temp password
@@ -63,7 +63,7 @@ public class AuthController {
             // Handle any errors, such as invalid token or other exceptions
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error during activation: " + e.getMessage());
         }
-    }
+    }*/
 
     @PostMapping("/login")
     public ResponseEntity<?> loginUser(@RequestBody @Valid LoginRequest loginRequest) {
@@ -88,12 +88,20 @@ public class AuthController {
     public ResponseEntity<?> completeRegistration(
             @RequestBody @Valid CompleteRegistrationRequest request) {
 
-        userService.completeRegistration(request.token(), request.password());
-        return ResponseEntity.ok("Password set successfully. You can now login.");
+        System.out.println("🔧 completeRegistration endpoint hit");
+
+        userService.completeRegistration(
+                request.token(),
+                request.username(),
+                request.password()
+        );
+
+        return ResponseEntity.ok("Account activated. You can now log in.");
     }
 
     public record CompleteRegistrationRequest(
             @NotBlank String token,
+            @NotBlank @Size(min = 4, max = 20) String username,
             @NotBlank @Size(min = 8) String password
     ) {}
 }

@@ -145,7 +145,8 @@ public class EmailService {
                             <p class="welcome-text">We're excited to have you join our  Team. To get started, please activate your account and set your own password:</p>
                 
                             <div class="button-container">
-                               <a href="http://localhost:4001/api/auth/activate?token=%s" class="button">Activate your account</a>
+                              <a href="http://localhost:4200/complete-registration?token=%s" class="button">Activate your account</a>
+                
                 
                             </div>
                 

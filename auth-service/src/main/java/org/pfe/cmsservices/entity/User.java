@@ -38,7 +38,7 @@ public class User {
     private Long departmentId;
 
     @Column(nullable = false)
-    private boolean enabled = true;
+    private boolean enabled ;
 
     @Column
     private String verificationToken;

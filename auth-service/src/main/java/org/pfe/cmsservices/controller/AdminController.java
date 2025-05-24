@@ -7,6 +7,8 @@ import org.pfe.cmsservices.service.UserService;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.security.access.prepost.PreAuthorize;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/admin")
 @RequiredArgsConstructor
@@ -28,6 +30,14 @@ public class AdminController {
     }
         public record CreateUserRequest(String email, RoleEnum role, Long departmentId) {}
         public record ActivateRequest(String token, String password) {}
+    public record UserDto(Long id, String email, RoleEnum role, Long departmentId, boolean enabled) {}
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/users")
+    public List<UserDto> getAllUsers() {
+        return userService.getAllUsers();
     }
+
+}
 
 

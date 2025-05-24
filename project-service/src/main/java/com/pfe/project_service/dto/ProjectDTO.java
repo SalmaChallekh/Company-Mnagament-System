@@ -19,7 +19,7 @@ public class ProjectDTO {
     private LocalDate startDate;
     private LocalDate endDate;
     private Project.ProjectStatus status;
-    private Long ownerId;
+    private Long managerId;
     private Long departmentId;
     private List<TaskDTO> tasks;
 
@@ -30,7 +30,7 @@ public class ProjectDTO {
         this.startDate = project.getStartDate();
         this.endDate = project.getEndDate();
         this.status = project.getStatus();
-        this.ownerId = project.getOwnerId();
+        this.managerId = project.getManagerId();
         this.departmentId = project.getDepartmentId();
         this.tasks = project.getTasks() != null
                 ? project.getTasks().stream()

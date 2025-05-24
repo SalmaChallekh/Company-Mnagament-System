@@ -11,6 +11,7 @@ public class TaskDTO {
     private String id;
     private String name;
     private String description;
+
     private String status;
     private String priority;
     private String assignedTo;

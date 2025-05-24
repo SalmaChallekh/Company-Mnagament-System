@@ -3,6 +3,8 @@ package org.pfe.cmsservices.service;
 
 import com.pfe.department_service.exception.DepartmentNotFoundException;
 import feign.FeignException;
+import org.pfe.cmsservices.controller.AdminController;
+import org.pfe.cmsservices.dto.AdminCreateUserRequest;
 import org.pfe.cmsservices.entity.*;
 import org.pfe.cmsservices.enums.RoleEnum;
 import org.pfe.cmsservices.exception.DepartmentServiceUnavailableException;
@@ -21,7 +23,12 @@ import org.springframework.transaction.annotation.Transactional;
 
 
 import java.time.LocalDateTime;
+
+import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
+
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -71,6 +78,7 @@ public class UserService {
 
         // Create and save user
         User user = createUserWithRole(email, role, deptId);
+        user.setEnabled(false);
         userRepository.save(user);
 
         // Send email outside transaction
@@ -126,16 +134,39 @@ public class UserService {
         }
     }
     // User completes registration
-    public void completeRegistration(String token, String password) {
+    public void completeRegistration(String token, String username, String password) {
         User user = userRepository.findByVerificationToken(token)
                 .orElseThrow(() -> new RuntimeException("Invalid token"));
 
         if (user.getTokenExpiry().isBefore(LocalDateTime.now())) {
             throw new RuntimeException("Token expired");
         }
+
+        if (userRepository.existsByUsername(username)) {
+            throw new RuntimeException("Username already taken");
+        }
+
+        user.setUsername(username);
         user.setPassword(passwordEncoder.encode(password));
         user.setEnabled(true);
         user.setVerificationToken(null);
+        user.setTokenExpiry(null); // Optional: clear expiry after use
+
         userRepository.save(user);
     }
+
+    public List<AdminController.UserDto> getAllUsers() {
+        List<User> users = userRepository.findAll();
+        return users.stream()
+                .map(user -> new AdminController.UserDto(
+                        user.getId(),
+                        user.getEmail(),
+                        user.getRole(),
+                        user.getDepartmentId(),
+                        user.isEnabled()
+                ))
+                .collect(Collectors.toList());
+    }
+
+
 }

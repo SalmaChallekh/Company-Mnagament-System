@@ -5,6 +5,7 @@ import org.pfe.cmsservices.security.JwtTokenProvider;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -14,6 +15,11 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
+import java.util.List;
 
 @Configuration
 @EnableWebSecurity
@@ -46,14 +52,17 @@ public class SecurityConfig {
     }
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        http.csrf(csrf -> csrf.disable()) // Disable CSRF as we're using JWT for security
+        http
+                .cors(Customizer.withDefaults())
+                .csrf(csrf -> csrf.disable()) // Disable CSRF as we're using JWT for security
                 .authorizeHttpRequests(auth -> auth
                         // Public endpoints (no token required)
-                        .requestMatchers("/api/auth/login", "/api/auth/register", "/api/auth/validateToken", "/api/auth/complete-registration").permitAll()
+                        .requestMatchers("/api/auth/login", "/api/auth/register", "/api/auth/validateToken", "/api/auth/complete-registration","api/roles").permitAll()
                         // Private endpoints (token validation required)
-                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/api/admin/users").hasRole("ADMIN")
                         .requestMatchers("/api/admin/employees/**").hasAnyRole("HR","ADMIN")
-                        .requestMatchers("/api/user/**").hasRole("USER")
+                        .requestMatchers("/api/user/**").hasAnyRole("USER","ADMIN")
+
                         .anyRequest().authenticated()
                 )
                 // No sessions; API is stateless
@@ -64,4 +73,17 @@ public class SecurityConfig {
 
         return http.build();
     }
-}
+    @Bean
+    CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration config = new CorsConfiguration();
+        config.setAllowCredentials(true);
+        config.setAllowedOrigins(List.of("http://localhost:4200"));
+        config.setAllowedHeaders(List.of("*"));
+        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        config.setExposedHeaders(List.of("Authorization"));
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", config);
+        return source;
+    }
+        }

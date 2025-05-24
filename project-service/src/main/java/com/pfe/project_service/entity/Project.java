@@ -25,7 +25,7 @@ public class Project {
     @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate endDate;
     private ProjectStatus status;
-    private Long ownerId;
+    private Long managerId;
     private Long departmentId;
     public enum ProjectStatus {
         PLANNED, IN_PROGRESS, COMPLETED, ON_HOLD
