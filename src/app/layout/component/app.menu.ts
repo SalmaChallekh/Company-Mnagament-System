@@ -54,48 +54,48 @@ export class AppMenu {
                     //     icon: 'pi pi-fw pi-globe',
                     //     routerLink: ['/landing']
                     // },
-                    {
-                        label: 'Auth',
-                        icon: 'pi pi-fw pi-user',
-                        items: [
-                            {
-                                label: 'Login',
-                                icon: 'pi pi-fw pi-sign-in',
-                                routerLink: ['/auth/login']
-                            },
-                            {
-                                label: 'Error',
-                                icon: 'pi pi-fw pi-times-circle',
-                                routerLink: ['/auth/error']
-                            },
-                            {
-                                label: 'Access Denied',
-                                icon: 'pi pi-fw pi-lock',
-                                routerLink: ['/auth/access']
-                            }
-                        ]
-                    },
-                    {
-                        label: 'My workspace',
-                        icon: 'pi pi-fw pi-user',
-                        routerLink: ['/pages/crud']
-                    },
+                    // {
+                    //     label: 'Auth',
+                    //     icon: 'pi pi-fw pi-user',
+                    //     items: [
+                    //         {
+                    //             label: 'Login',
+                    //             icon: 'pi pi-fw pi-sign-in',
+                    //             routerLink: ['/auth/login']
+                    //         },
+                    //         {
+                    //             label: 'Error',
+                    //             icon: 'pi pi-fw pi-times-circle',
+                    //             routerLink: ['/auth/error']
+                    //         },
+                    //         {
+                    //             label: 'Access Denied',
+                    //             icon: 'pi pi-fw pi-lock',
+                    //             routerLink: ['/auth/access']
+                    //         }
+                    //     ]
+                    // },
+                    // {
+                    //     label: 'My workspace',
+                    //     icon: 'pi pi-fw pi-user',
+                    //     routerLink: ['/pages/crud']
+                    // },
                     {
                         label: 'Projects',
                         icon: 'pi pi-folder',
                         routerLink: ['/projects'],
-                        items: [
-                            {
-                                label: 'All Projects',
-                                icon: 'pi pi-list',
-                                routerLink: ['/projects']
-                            },
-                            {
-                                label: 'New Project',
-                                icon: 'pi pi-plus',
-                                routerLink: ['/projects/new']
-                            }
-                        ]
+                        // items: [
+                        //     // {
+                        //     //     label: 'All Projects',
+                        //     //     icon: 'pi pi-list',
+                        //     //     routerLink: ['/projects']
+                        //     // },
+                        //     // {
+                        //     //     label: 'New Project',
+                        //     //     icon: 'pi pi-plus',
+                        //     //     routerLink: ['/projects/new']
+                        //     // }
+                        // ]
                     },
                     {
                         label: 'Employees',

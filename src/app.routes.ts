@@ -2,7 +2,7 @@ import { Routes } from '@angular/router';
 import { AppLayout } from './app/layout/component/app.layout';
 import { DashboardsComponent } from './app/pages/dashboards/dashboards.component';
 import { AttendanceCalendarComponent } from './app/pages/attendance-calendar/attendance-calendar.component';
-import { Crud } from './app/pages/crud/crud';
+import { UserManagementComponent } from './app/pages/crud/crud';
 import { DepartmentListComponent } from './app/pages/department-list/department-list.component';
 import { InvoiceListComponent } from './app/pages/invoice-list/invoice-list.component';
 import { Landing } from './app/pages/landing/landing';
@@ -15,12 +15,16 @@ import { PayrollListComponent } from './app/payroll-list/payroll-list.component'
 import { AuthGuard } from './app/guards/auth.guard';
 import { RoleGuard } from './app/guards/role.guard';
 import { Access } from './app/pages/auth/access';
+import { KanbanComponent } from './app/pages/kanban/kanban.component';
+import { CompleteRegistrationComponent } from './app/complete-registration/complete-registration.component';
 
 // Routes with Role-Based Access
 export const appRoutes: Routes = [
     { path: '', redirectTo: '/auth/login', pathMatch: 'full' },
     { path: 'auth', loadChildren: () => import('./app/pages/auth/auth.routes') },
-
+    {
+        path: 'complete-registration', component: CompleteRegistrationComponent
+    },
     // App Layout with nested routes
     {
         path: '',
@@ -43,7 +47,7 @@ export const appRoutes: Routes = [
             },
             {
                 path: 'employees',
-                component: Crud,
+                component: UserManagementComponent,
                 canActivate: [AuthGuard, RoleGuard],
                 data: { role: 'ADMIN' } // Only accessible by Admins
             },
@@ -52,12 +56,18 @@ export const appRoutes: Routes = [
             { path: 'attendance', component: AttendanceCalendarComponent, canActivate: [AuthGuard] },
             { path: 'payroll', component: PayrollListComponent, canActivate: [AuthGuard] },
             { path: 'leave', component: LeaveRequestComponent, canActivate: [AuthGuard] },
-            { path: 'reports', component: ReportsComponent, canActivate: [AuthGuard] }
+            { path: 'reports', component: ReportsComponent, canActivate: [AuthGuard] },
+            { path: 'kanban', component: KanbanComponent },
+
         ]
     },
 
     { path: 'landing', component: Landing },
     { path: 'notfound', component: Notfound },
     { path: '**', redirectTo: '/notfound' },
-    { path: 'auth/access', component:Access  },
+    { path: 'auth/access', component: Access },
+    {
+        path: 'complete-registration', component: CompleteRegistrationComponent
+    }
+
 ];

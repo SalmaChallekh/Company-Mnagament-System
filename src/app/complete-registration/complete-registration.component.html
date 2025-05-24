@@ -1,0 +1,18 @@
+<div class="container">
+    <h2>Complete Your Registration</h2>
+    <form [formGroup]="registrationForm" (ngSubmit)="onSubmit()">
+        <div>
+            <label for="username">Username</label>
+            <input id="username" formControlName="username" required />
+        </div>
+
+        <div>
+            <label for="password">Password</label>
+            <input id="password" type="password" formControlName="password" required />
+        </div>
+
+        <button type="submit" [disabled]="registrationForm.invalid">Submit</button>
+    </form>
+
+    <div *ngIf="message" class="message">{{ message }}</div>
+</div>

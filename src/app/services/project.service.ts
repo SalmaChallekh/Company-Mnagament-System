@@ -1,14 +1,69 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { HttpClient, HttpHeaders, HttpErrorResponse } from '@angular/common/http';
+import { Observable, throwError } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 import moment from 'moment';
+
 @Injectable({
     providedIn: 'root'
 })
 export class ProjectService {
     private apiUrl = 'http://localhost:4003/api/projects';
+    private apiUrl2 = 'http://localhost:4002/api/admin/departments';
+    private apiUrl3 = 'http://localhost:4001/api/user?role=ROLE_MANAGER';
 
     constructor(private http: HttpClient) { }
+
+    private getAuthHeaders(): HttpHeaders {
+        const token = localStorage.getItem('token');
+        if (!token) {
+            console.warn('No authentication token found');
+        }
+        return new HttpHeaders({
+            'Authorization': `Bearer ${token}`
+        });
+    }
+
+    private handleError(error: HttpErrorResponse) {
+        console.error('API Error:', error);
+        let errorMessage = 'An unknown error occurred';
+
+        if (error.error instanceof ErrorEvent) {
+            // Client-side error
+            errorMessage = `Error: ${error.error.message}`;
+        } else {
+            // Server-side error
+            errorMessage = `Error Code: ${error.status}\nMessage: ${error.message}`;
+            if (error.error && error.error.message) {
+                errorMessage = error.error.message;
+            }
+        }
+        return throwError(() => new Error(errorMessage));
+    }
+
+    getAllProjects(): Observable<any[]> {
+        return this.http.get<any[]>(`${this.apiUrl}/getAll`, {
+            headers: this.getAuthHeaders()
+        }).pipe(
+            catchError(this.handleError)
+        );
+    }
+
+    getAllDepartments(): Observable<any[]> {
+        return this.http.get<any[]>(`${this.apiUrl2}/getAll`, {
+            headers: this.getAuthHeaders()
+        }).pipe(
+            catchError(this.handleError)
+        );
+    }
+
+    getAllManagers(): Observable<any[]> {
+        return this.http.get<any[]>(this.apiUrl3, {
+            headers: this.getAuthHeaders()
+        }).pipe(
+            catchError(this.handleError)
+        );
+    }
 
     createProject(project: any): Observable<any> {
         const formattedProject = {
@@ -17,26 +72,16 @@ export class ProjectService {
             endDate: moment(project.endDate).format('YYYY-MM-DD')
         };
         return this.http.post(`${this.apiUrl}/create`, formattedProject, {
-            headers: new HttpHeaders({
-                Authorization: `Bearer ${localStorage.getItem('token')}`
-            })
-        });
+            headers: this.getAuthHeaders()
+        }).pipe(
+            catchError(this.handleError)
+        );
     }
 
     getProjectById(id: string): Observable<any> {
         return this.http.get(`${this.apiUrl}/getById/${id}`);
     }
 
-    // getAllProjects(): Observable<any[]> {
-    //     return this.http.get<any[]>(`${this.apiUrl}/getAll`);
-    // }
-    getAllProjects(): Observable<any[]> {
-        return this.http.get<any[]>(`${this.apiUrl}/getAll`, {
-            headers: new HttpHeaders({
-                Authorization: `Bearer ${localStorage.getItem('token')}`
-            })
-        });
-    }
 
     addTaskToProject(projectId: string, task: any): Observable<any> {
         return this.http.post(`${this.apiUrl}/${projectId}/tasks`, task);
@@ -68,19 +113,6 @@ export class ProjectService {
             })
         });
     }
-
-    // updateProject(project: any): Observable<any> {
-    //     return this.http.put(`${this.apiUrl}/${project.id}`, project, {
-    //         headers: new HttpHeaders({
-    //             Authorization: `Bearer ${localStorage.getItem('token')}`
-    //         })
-    //     });
-    // }
-
-    // updateProject(project: any): Observable<any> {
-    //     return this.http.put(`${this.apiUrl}/${project.id}`, project,{
-    //     });
-    // }
 }
 
 

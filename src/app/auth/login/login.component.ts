@@ -20,6 +20,7 @@ import { HttpErrorResponse } from '@angular/common/http';
     ],
     selector: 'app-login',
     templateUrl: './login.component.html',
+    styleUrls: ['./login.component.css'],
     providers: [MessageService]
 })
 export class LoginComponent {

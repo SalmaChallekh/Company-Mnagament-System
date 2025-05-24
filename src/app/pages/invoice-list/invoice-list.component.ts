@@ -5,14 +5,27 @@ import { ToolbarModule } from 'primeng/toolbar';
 import { ButtonModule } from 'primeng/button';
 import { TableModule } from 'primeng/table';
 import { TagModule } from 'primeng/tag';
+import { InvoicesService } from '../../services/invoices.service';
+import { CalendarModule } from 'primeng/calendar';
+import { CardModule } from 'primeng/card';
+import { ConfirmDialogModule } from 'primeng/confirmdialog';
+import { DialogModule } from 'primeng/dialog';
+import { DropdownModule } from 'primeng/dropdown';
+import { IconFieldModule } from 'primeng/iconfield';
+import { InputIconModule } from 'primeng/inputicon';
+import { InputTextModule } from 'primeng/inputtext';
+import { InputTextarea } from 'primeng/inputtextarea';
+import { MultiSelectModule } from 'primeng/multiselect';
+import { ProgressBarModule } from 'primeng/progressbar';
+import { ToastModule } from 'primeng/toast';
 
 interface Invoice {
     id: string;
-    number: string;
-    clientName: string;
-    date: Date;
-    amount: number;
+    invoiceDate: Date;
+    dueDate: Date;
+    totalAmount: number;
     status: 'PAID' | 'PENDING' | 'OVERDUE';
+    items: string;
 }
 
 @Component({
@@ -21,81 +34,81 @@ interface Invoice {
     imports: [
         CommonModule,
         FormsModule,
-        ToolbarModule,
-        ButtonModule,
         TableModule,
-        TagModule
+        TagModule,
+        ButtonModule,
+        ToolbarModule,
+        DialogModule,
+        InputTextModule,
+        InputTextarea,
+        CalendarModule,
+        DropdownModule,
+        MultiSelectModule,
+        ToastModule,
+        CardModule,
+        ConfirmDialogModule,
+        ProgressBarModule,
+        IconFieldModule,
+        InputIconModule
     ],
-    template: `
-    <div class="card">
-      <p-toolbar>
-        <ng-template pTemplate="left">
-          <h4>Invoices</h4>
-        </ng-template>
-        <ng-template pTemplate="right">
-          <p-button label="New Invoice" icon="pi pi-plus"
-                (click)="createInvoice()"></p-button>
-        </ng-template>
-      </p-toolbar>
-
-      <p-table [value]="invoices" [paginator]="true" [rows]="10">
-        <ng-template pTemplate="header">
-          <tr>
-            <th>Number</th>
-            <th>Client</th>
-            <th>Date</th>
-            <th>Amount</th>
-            <th>Status</th>
-            <th>Actions</th>
-          </tr>
-        </ng-template>
-        <ng-template pTemplate="body" let-invoice>
-          <tr>
-            <td>{{invoice.number}}</td>
-            <td>{{invoice.clientName}}</td>
-            <td>{{invoice.date | date}}</td>
-            <td>{{invoice.amount | currency}}</td>
-            <td>
-              <p-tag [value]="invoice.status"
-                    [severity]="getStatusSeverity(invoice.status)">
-              </p-tag>
-            </td>
-            <td>
-              <button pButton icon="pi pi-eye"
-                     (click)="viewInvoice(invoice)"></button>
-              <button pButton icon="pi pi-print"
-                     (click)="printInvoice(invoice)"></button>
-            </td>
-          </tr>
-        </ng-template>
-      </p-table>
-    </div>
-  `,
+    templateUrl: './invoice-list.component.html',
     styleUrls: ['./invoice-list.component.scss']
 })
 export class InvoiceListComponent {
-    invoices: Invoice[] = [
-        {
-            id: '1',
-            number: 'INV-001',
-            clientName: 'Acme Corp',
-            date: new Date(),
-            amount: 1250.50,
-            status: 'PAID'
-        },
-        {
-            id: '2',
-            number: 'INV-002',
-            clientName: 'Globex',
-            date: new Date(),
-            amount: 3250.75,
-            status: 'PENDING'
-        }
+    invoices: Invoice[] = [];
+    constructor(private invoiceService: InvoicesService) { }
+    ngOnInit(): void {
+        this.loadInvoices();
+    }
+    loadInvoices() {
+        this.invoiceService.getAllInvoices().subscribe({
+            next: (data) => this.invoices = data,
+            error: (err) => console.error('Failed to load invoices', err)
+        });
+    }
+    invoiceDialog: boolean = false;
+
+    invoice: Invoice = {
+        id: '',
+        invoiceDate: new Date(),
+        dueDate: new Date(),
+        totalAmount: 0,
+        status: 'PENDING',
+        items: ''
+    };
+
+    statusOptions = [
+        { label: 'Paid', value: 'PAID' },
+        { label: 'Pending', value: 'PENDING' },
+        { label: 'Overdue', value: 'OVERDUE' }
     ];
 
-    createInvoice() {
-        console.log('Create invoice clicked');
+    openNewInvoice() {
+        this.invoice = {
+            id: '',
+            invoiceDate: new Date(),
+            dueDate: new Date(),
+            totalAmount: 0,
+            status: 'PENDING',
+            items: ''
+        };
+        this.invoiceDialog = true;
     }
+
+    hideDialog() {
+        this.invoiceDialog = false;
+    }
+
+    saveInvoice() {
+        this.invoiceService.createInvoice(this.invoice).subscribe({
+            next: () => {
+                this.loadInvoices();
+                this.invoiceDialog = false;
+            },
+            error: err => console.error('Error creating invoice', err)
+        });
+    }
+
 
     viewInvoice(invoice: Invoice) {
         console.log('View invoice:', invoice);

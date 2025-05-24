@@ -2,14 +2,131 @@
     <ng-template #start>
         <p-button label="New Task" icon="pi pi-plus" severity="secondary" class="mr-2" (onClick)="openNew()" />
     </ng-template>
+</p-toolbar>
 
-    <ng-template #end>
-        <p-button label="Export" icon="pi pi-upload" severity="secondary" (onClick)="exportCSV()" />
+<p-table #dt [value]="tasks()" [rows]="10" [columns]="cols" [paginator]="true"
+    [globalFilterFields]="['name', 'description', 'status', 'assignedTo.name', 'projectName']"
+    [tableStyle]="{ 'min-width': '75rem' }" [(selection)]="selectedTasks" [rowHover]="true" dataKey="id"
+    currentPageReportTemplate="Showing {first} to {last} of {totalRecords} tasks" [showCurrentPageReport]="true"
+    [rowsPerPageOptions]="[10, 20, 30]">
+    <ng-template #caption>
+        <div class="flex items-center justify-between">
+            <h5 class="m-0">Manage Tasks</h5>
+            <p-iconfield>
+                <p-inputicon styleClass="pi pi-search" />
+                <!-- <input pInputText type="text" (input)="dt.filterGlobal(($event.target as HTMLInputElement).value, 'contains')"
+                    placeholder="Search..." /> -->
+            </p-iconfield>
+        </div>
+    </ng-template>
+
+    <ng-template #header>
+        <tr>
+            <th style="width: 3rem"><p-tableHeaderCheckbox /></th>
+            <th pSortableColumn="name">Title <p-sortIcon field="name" /></th>
+            <th>Description</th>
+            <th pSortableColumn="projectName">Project <p-sortIcon field="projectName" /></th>
+            <th pSortableColumn="startDate">Start Date <p-sortIcon field="startDate" /></th>
+            <th pSortableColumn="endDate">Deadline <p-sortIcon field="endDate" /></th>
+            <th pSortableColumn="priority">Priority <p-sortIcon field="priority" /></th>
+            <th pSortableColumn="status">Status <p-sortIcon field="status" /></th>
+            <th pSortableColumn="assignedTo.name">Assigned To <p-sortIcon field="assignedTo.name" /></th>
+            <th>Actions</th>
+        </tr>
+    </ng-template>
+
+    <ng-template #body let-task>
+        <tr>
+            <td><p-tableCheckbox [value]="task" /></td>
+            <td>{{ task.name }}</td>
+            <td>{{ task.description | slice: 0:50 }}{{ task.description.length > 50 ? '...' : '' }}</td>
+            <td>{{ task.projectName }}</td>
+            <td>{{ task.startDate | date: 'shortDate' }}</td>
+            <td>{{ task.endDate | date: 'shortDate' }}</td>
+            <td><p-tag [value]="task.priority" [severity]="getPrioritySeverity(task.priority)" /></td>
+            <td><p-tag [value]="task.status" [severity]="getStatusSeverity(task.status)" /></td>
+            <td>{{ task.assignedTo?.name }}</td>
+            <td>
+                <p-button icon="pi pi-pencil" class="mr-2" [rounded]="true" [outlined]="true"
+                    (click)="editTask(task)" />
+                <p-button icon="pi pi-trash" severity="danger" [rounded]="true" [outlined]="true"
+                    (click)="confirmDelete(task)" />
+            </td>
+        </tr>
+    </ng-template>
+</p-table>
+
+<!-- Dialog for Add/Edit -->
+<p-dialog [(visible)]="taskDialog" [style]="{ width: '550px' }" header="Task Details" [modal]="true">
+    <ng-template #content>
+        <div class="flex flex-col gap-6">
+            <div>
+                <label for="title" class="block font-bold mb-2">Title</label>
+                <input type="text" pInputText id="title" [(ngModel)]="task.name" required autofocus />
+            </div>
+
+            <div>
+                <label for="description" class="block font-bold mb-2">Description</label>
+                <textarea pInputTextarea id="description" [(ngModel)]="task.description" rows="3"></textarea>
+            </div>
+
+            <div>
+                <label for="projectId" class="block font-bold mb-2">Project</label>
+                <p-dropdown [options]="projects" [(ngModel)]="task.projectId" optionLabel="name" optionValue="id"
+                    placeholder="Select Project" inputId="projectId"
+                    (onChange)="task.projectName = getProjectName(task.projectId)">
+                </p-dropdown>
+            </div>
+            <div>
+                <label for="startDate" class="block font-bold mb-2">Start Date</label>
+                <p-calendar id="startDate" [(ngModel)]="task.startDate" [showIcon]="true"
+                    dateFormat="yy-mm-dd"></p-calendar>
+            </div>
+            <div>
+                <label for="endDate" class="block font-bold mb-2">End Date</label>
+                <p-calendar id="endDate" [(ngModel)]="task.endDate" [showIcon]="true"
+                    dateFormat="yy-mm-dd"></p-calendar>
+            </div>
+
+            <div>
+                <label for="priority" class="block font-bold mb-2">Priority</label>
+                <p-dropdown [options]="priorities" [(ngModel)]="task.priority" placeholder="Select Priority"
+                    inputId="priority"></p-dropdown>
+            </div>
+
+            <div>
+                <label for="status" class="block font-bold mb-2">Status</label>
+                <p-dropdown [options]="statuses" [(ngModel)]="task.status" placeholder="Select Status"
+                    inputId="status"></p-dropdown>
+            </div>
+
+            <div>
+                <label for="assignedTo" class="block font-bold mb-2">Assigned To</label>
+                <p-dropdown [options]="teamMembers" [(ngModel)]="task.assignedTo" optionLabel="name"
+                    placeholder="Select Team Member" inputId="assignedTo"></p-dropdown>
+            </div>
+        </div>
+    </ng-template>
+
+    <ng-template #footer>
+        <p-button label="Cancel" icon="pi pi-times" text (click)="hideDialog()" />
+        <p-button label="Save" icon="pi pi-check" (click)="saveTask()" />
+    </ng-template>
+</p-dialog>
+
+<!-- Confirmation Dialog -->
+<p-confirmdialog [style]="{ width: '450px' }" />
+
+
+<!-- <p-toolbar styleClass="mb-6">
+    <ng-template #start>
+        <p-button label="New Task" icon="pi pi-plus" severity="secondary" class="mr-2" (onClick)="openNew()" />
     </ng-template>
 </p-toolbar>
 
 <p-table #dt [value]="tasks()" [rows]="10" [columns]="cols" [paginator]="true"
-    [globalFilterFields]="['title', 'description', 'status', 'assignedTo.name']" [tableStyle]="{ 'min-width': '75rem' }"
+    [globalFilterFields]="['title', 'description', 'status', 'assignedTo.name', 'project.name']"
+    [tableStyle]="{ 'min-width': '85rem' }"
     [(selection)]="selectedTasks" [rowHover]="true" dataKey="id"
     currentPageReportTemplate="Showing {first} to {last} of {totalRecords} tasks" [showCurrentPageReport]="true"
     [rowsPerPageOptions]="[10, 20, 30]">
@@ -18,47 +135,45 @@
             <h5 class="m-0">Manage Tasks</h5>
             <p-iconfield>
                 <p-inputicon styleClass="pi pi-search" />
-                <input pInputText type="text" (input)="onGlobalFilter(dt, $event)" placeholder="Search..." />
             </p-iconfield>
         </div>
     </ng-template>
+
     <ng-template #header>
         <tr>
             <th style="width: 3rem">
                 <p-tableHeaderCheckbox />
             </th>
             <th pSortableColumn="title" style="min-width:12rem">
-                Title
-                <p-sortIcon field="title" />
+                Title <p-sortIcon field="title" />
             </th>
             <th style="min-width:16rem">Description</th>
             <th pSortableColumn="dueDate" style="min-width:10rem">
-                Due Date
-                <p-sortIcon field="dueDate" />
+                Due Date <p-sortIcon field="dueDate" />
             </th>
             <th pSortableColumn="priority" style="min-width:10rem">
-                Priority
-                <p-sortIcon field="priority" />
+                Priority <p-sortIcon field="priority" />
             </th>
             <th pSortableColumn="status" style="min-width:10rem">
-                Status
-                <p-sortIcon field="status" />
+                Status <p-sortIcon field="status" />
             </th>
             <th pSortableColumn="assignedTo.name" style="min-width:12rem">
-                Assigned To
-                <p-sortIcon field="assignedTo.name" />
+                Assigned To <p-sortIcon field="assignedTo.name" />
+            </th>
+            <th pSortableColumn="project.name" style="min-width:12rem">
+                Project <p-sortIcon field="project.name" />
             </th>
             <th style="min-width: 12rem"></th>
         </tr>
     </ng-template>
+
     <ng-template #body let-task>
         <tr>
-            <td style="width: 3rem">
+            <td>
                 <p-tableCheckbox [value]="task" />
             </td>
-            <td style="min-width: 12rem">{{ task.title }}</td>
-            <td style="min-width: 16rem">{{ task.description | slice:0:50 }}{{ task.description.length > 50 ? '...' : ''
-                }}</td>
+            <td>{{ task.name }}</td>
+            <td>{{ task.description | slice:0:50 }}{{ task.description.length > 50 ? '...' : '' }}</td>
             <td>{{ task.dueDate | date:'shortDate' }}</td>
             <td>
                 <p-tag [value]="task.priority" [severity]="getPrioritySeverity(task.priority)" />
@@ -66,7 +181,8 @@
             <td>
                 <p-tag [value]="task.status" [severity]="getStatusSeverity(task.status)" />
             </td>
-            <td>{{ task.assignedTo.name }}</td>
+            <td>{{ task.assignedTo?.name }}</td>
+            <td>{{ task.project?.name }}</td>
             <td>
                 <p-button icon="pi pi-pencil" class="mr-2" [rounded]="true" [outlined]="true"
                     (click)="editTask(task)" />
@@ -82,7 +198,7 @@
         <div class="flex flex-col gap-6">
             <div>
                 <label for="title" class="block font-bold mb-3">Title</label>
-                <input type="text" pInputText id="title" [(ngModel)]="task.title" required autofocus />
+                <input type="text" pInputText id="title" [(ngModel)]="task.name" required autofocus />
             </div>
 
             <div>
@@ -113,6 +229,12 @@
                 <p-dropdown [options]="teamMembers" [(ngModel)]="task.assignedTo" optionLabel="name"
                     placeholder="Select Team Member" inputId="assignedTo"></p-dropdown>
             </div>
+
+            <div>
+                <label for="project" class="block font-bold mb-3">Project</label>
+                <p-dropdown [options]="projects" [(ngModel)]="task.project" optionLabel="name"
+                    placeholder="Select Project" inputId="project"></p-dropdown>
+            </div>
         </div>
     </ng-template>
 
@@ -122,4 +244,4 @@
     </ng-template>
 </p-dialog>
 
-<p-confirmdialog [style]="{ width: '450px' }" />
+<p-confirmdialog [style]="{ width: '450px' }" /> -->

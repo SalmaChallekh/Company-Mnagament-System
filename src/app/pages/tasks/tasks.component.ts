@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, signal } from '@angular/core';
+import { Component, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { TableModule } from 'primeng/table';
 import { TagModule } from 'primeng/tag';
@@ -14,6 +14,9 @@ import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { IconFieldModule } from 'primeng/iconfield';
 import { InputIconModule } from 'primeng/inputicon';
 import { ConfirmationService, MessageService } from 'primeng/api';
+import { ActivatedRoute } from '@angular/router';
+import { ProjectService } from '../../services/project.service';
+import { TaskService } from '../../services/task.service';
 
 interface TeamMember {
     id: string;
@@ -23,12 +26,16 @@ interface TeamMember {
 
 interface Task {
     id: string;
-    title: string;
+    name: string;
     description: string;
-    dueDate: Date;
+    startDate: Date;
+    endDate: Date;
+    //dueDate: Date;
     priority: 'LOW' | 'MEDIUM' | 'HIGH';
     status: 'NOT_STARTED' | 'IN_PROGRESS' | 'COMPLETED' | 'BLOCKED';
     assignedTo: TeamMember;
+    projectId: string;
+    projectName: string;
 }
 
 @Component({
@@ -43,7 +50,6 @@ interface Task {
         ToolbarModule,
         DialogModule,
         InputTextModule,
-        InputTextModule,
         CalendarModule,
         DropdownModule,
         ConfirmDialogModule,
@@ -54,16 +60,20 @@ interface Task {
     styleUrls: ['./tasks.component.scss'],
     providers: [MessageService, ConfirmationService]
 })
-export class TasksComponent {
+export class TasksComponent implements OnInit {
     tasks = signal<Task[]>([]);
     teamMembers: TeamMember[] = [];
+    projects: any[] = [];
     selectedTasks: Task[] = [];
     taskDialog = false;
     task: Task = this.emptyTask();
+    loading = signal(false);
+    projectId: string | null = null;
 
     cols = [
-        { field: 'title', header: 'Title' },
+        { field: 'name', header: 'Title' },
         { field: 'description', header: 'Description' },
+        { field: 'projectName', header: 'Project' },
         { field: 'dueDate', header: 'Due Date' },
         { field: 'priority', header: 'Priority' },
         { field: 'status', header: 'Status' },
@@ -83,59 +93,108 @@ export class TasksComponent {
         { label: 'Blocked', value: 'BLOCKED' }
     ];
 
+    constructor(
+        private taskService: TaskService,
+        private projectService: ProjectService,
+        private messageService: MessageService,
+        private confirmationService: ConfirmationService,
+        private route: ActivatedRoute
+    ) { }
+
     ngOnInit(): void {
-        this.loadDemoData();
+        this.projectId = this.route.snapshot.paramMap.get('projectId');
+        this.loadData();
     }
 
-    loadDemoData() {
-        this.teamMembers = [
-            { id: '1', name: 'John Doe', role: 'Developer' },
-            { id: '2', name: 'Jane Smith', role: 'Designer' },
-            { id: '3', name: 'Mike Johnson', role: 'QA Engineer' }
-        ];
+    loadData() {
+        this.loading.set(true);
 
-        const demoTasks: Task[] = [
-            {
-                id: '1',
-                title: 'Implement authentication',
-                description: 'Create login and registration functionality with JWT support',
-                dueDate: new Date(2023, 11, 15),
-                priority: 'HIGH',
-                status: 'IN_PROGRESS',
-                assignedTo: this.teamMembers[0]
+        this.projectService.getAllProjects().subscribe({
+            next: (projects) => {
+                this.projects = projects;
+
+                if (this.projectId) {
+                    this.loadTasksByProject(this.projectId);
+                } else {
+                    this.loadAllTasks();
+                }
             },
-            {
-                id: '2',
-                title: 'Design dashboard UI',
-                description: 'Create mockups for the admin dashboard with responsive design',
-                dueDate: new Date(2023, 11, 10),
-                priority: 'MEDIUM',
-                status: 'COMPLETED',
-                assignedTo: this.teamMembers[1]
-            },
-            {
-                id: '3',
-                title: 'Write API documentation',
-                description: 'Document all endpoints for the REST API with examples',
-                dueDate: new Date(2023, 11, 20),
-                priority: 'LOW',
-                status: 'NOT_STARTED',
-                assignedTo: this.teamMembers[2]
+            error: () => {
+                this.messageService.add({
+                    severity: 'error',
+                    summary: 'Error',
+                    detail: 'Failed to load projects',
+                    life: 3000
+                });
+                this.loading.set(false);
             }
-        ];
+        });
+    }
 
-        this.tasks.set(demoTasks);
+    loadTasksByProject(projectId: string) {
+        this.taskService.getTasksByProjectId(projectId).subscribe({
+            next: (tasks) => {
+                this.tasks.set(tasks.map(task => ({
+                    ...task,
+                    projectName: this.getProjectName(task.projectId),
+                    assignedTo: this.teamMembers.find(m => m.id === task.assignedTo) || {} as TeamMember
+                })));
+                this.loading.set(false);
+            },
+            error: () => {
+                this.messageService.add({
+                    severity: 'error',
+                    summary: 'Error',
+                    detail: 'Failed to load tasks',
+                    life: 3000
+                });
+                this.loading.set(false);
+            }
+        });
+    }
+
+    loadAllTasks() {
+        this.taskService.getAllTasks().subscribe({
+            next: (tasks) => {
+                this.tasks.set(tasks.map(task => ({
+                    ...task,
+                    projectName: this.getProjectName(task.projectId),
+                    assignedTo: this.teamMembers.find(m => m.id === task.assignedTo) || {} as TeamMember
+                })));
+                this.loading.set(false);
+            },
+            error: () => {
+                this.messageService.add({
+                    severity: 'error',
+                    summary: 'Error',
+                    detail: 'Failed to load tasks',
+                    life: 3000
+                });
+                this.loading.set(false);
+            }
+        });
+    }
+
+    getProjectName(projectId: string): string {
+        const project = this.projects.find(p => p.id === projectId);
+        return project ? project.name : 'Unknown Project';
+    }
+    formatDate(date: Date): string {
+        return date.toISOString().split('T')[0]; // returns 'yyyy-MM-dd'
     }
 
     emptyTask(): Task {
         return {
             id: '',
-            title: '',
+            name: '',
             description: '',
-            dueDate: new Date(),
+            startDate: new Date,
+            endDate: new Date,
             priority: 'MEDIUM',
             status: 'NOT_STARTED',
-            assignedTo: {} as TeamMember
+            assignedTo: {} as TeamMember,
+            projectId: this.projectId || '',
+            projectName: this.projectId ? this.getProjectName(this.projectId) : ''
         };
     }
 
@@ -150,66 +209,104 @@ export class TasksComponent {
     }
 
     saveTask() {
-        const tasks = this.tasks();
+    this.loading.set(true);
 
-        if (this.task.id) {
-            // Update existing task
-            const index = tasks.findIndex(t => t.id === this.task.id);
-            if (index !== -1) {
-                tasks[index] = { ...this.task };
+    const taskToSave: any = {
+        ...this.task,
+        startDate: this.formatDate(this.task.startDate),
+        endDate: this.formatDate(this.task.endDate),
+        assignedTo: this.task.assignedTo?.id,
+        projectId: this.task.projectId
+    };
+
+    if (!this.task.id) {
+        delete taskToSave.id; // ✅ prevent sending id: ""
+    }
+
+    if (this.task.id) {
+        this.taskService.updateTask(this.task.id, taskToSave).subscribe({
+            next: () => {
+                this.messageService.add({ severity: 'success', summary: 'Success', detail: 'Task updated successfully', life: 3000 });
+                this.loadData();
+                this.taskDialog = false;
+            },
+            error: () => {
+                this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Failed to update task', life: 3000 });
+                this.loading.set(false);
             }
-        } else {
-            // Add new task
-            this.task.id = this.generateId();
-            tasks.push({ ...this.task });
-        }
+        });
+    } else {
+        this.taskService.createTask(taskToSave).subscribe({
+            next: () => {
+                this.messageService.add({ severity: 'success', summary: 'Success', detail: 'Task created successfully', life: 3000 });
+                this.loadData();
+                this.taskDialog = false;
+            },
+            error: () => {
+                this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Failed to create task', life: 3000 });
+                this.loading.set(false);
+            }
+        });
+    }
+}
 
-        this.tasks.set([...tasks]);
-        this.taskDialog = false;
+
+
+    confirmDelete(task: Task) {
+        this.confirmationService.confirm({
+            message: 'Are you sure you want to delete this task?',
+            header: 'Confirm',
+            icon: 'pi pi-exclamation-triangle',
+            accept: () => {
+                this.deleteTask(task.id);
+            }
+        });
     }
 
-    deleteTask(task: Task) {
-        this.tasks.set(this.tasks().filter(t => t.id !== task.id));
+    deleteTask(taskId: string) {
+        this.loading.set(true);
+        this.taskService.deleteTask(taskId).subscribe({
+            next: () => {
+                this.messageService.add({
+                    severity: 'success',
+                    summary: 'Success',
+                    detail: 'Task deleted successfully',
+                    life: 3000
+                });
+                this.loadData();
+            },
+            error: () => {
+                this.messageService.add({
+                    severity: 'error',
+                    summary: 'Error',
+                    detail: 'Failed to delete task',
+                    life: 3000
+                });
+                this.loading.set(false);
+            }
+        });
     }
 
-    exportCSV() {
-        // Implement CSV export functionality
-        console.log('Exporting tasks to CSV');
-    }
-
-    onGlobalFilter(table: any, event: Event) {
-        table.filterGlobal((event.target as HTMLInputElement).value, 'contains');
-    }
     getStatusSeverity(status: string): 'success' | 'info' | 'warn' | 'danger' {
         switch (status) {
-            case 'COMPLETED':
-                return 'success';
-            case 'IN_PROGRESS':
-                return 'info';
-            case 'BLOCKED':
-                return 'danger';
+            case 'COMPLETED': return 'success';
+            case 'IN_PROGRESS': return 'info';
+            case 'BLOCKED': return 'danger';
             case 'NOT_STARTED':
-            default:
-                return 'warn';
+            default: return 'warn';
         }
     }
-    getPrioritySeverity(priority: string): 'success' | 'info' | 'warn' | 'danger' | 'secondary' | 'contrast' {
+
+    getPrioritySeverity(priority: string): 'success' | 'info' | 'warn' | 'danger' {
         switch (priority) {
-            case 'HIGH':
-                return 'danger';
-            case 'MEDIUM':
-                return 'warn';
+            case 'HIGH': return 'danger';
+            case 'MEDIUM': return 'warn';
             case 'LOW':
-            default:
-                return 'success';
+            default: return 'success';
         }
     }
 
     hideDialog() {
         this.taskDialog = false;
-    }
-
-    private generateId(): string {
-        return Math.random().toString(36).substring(2, 9);
     }
 }

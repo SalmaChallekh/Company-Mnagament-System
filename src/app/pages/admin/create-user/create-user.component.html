@@ -8,7 +8,8 @@
 
             <div class="field col-12 md:col-6">
                 <label for="role">Role</label>
-                <p-dropdown [options]="roles" [(ngModel)]="user.role" name="role" placeholder="Select a role" required>
+                <p-dropdown [options]="roles" [(ngModel)]="user.role" name="role" placeholder="Select a role"
+                    appendTo="body" autoZIndex="true" baseZIndex="1000" required>
                 </p-dropdown>
             </div>
 
@@ -22,6 +23,7 @@
         <button type="submit" pButton label="Create User" [disabled]="!userForm.valid"></button>
     </form>
 </p-card>
+
 
 <!-- <p-toolbar class="mb-4">
     <ng-template #start>

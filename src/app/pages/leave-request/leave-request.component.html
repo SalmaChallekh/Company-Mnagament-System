@@ -1,137 +1,85 @@
-<p-toolbar styleClass="mb-6">
-    <ng-template #start>
-        <p-button label="New Request" icon="pi pi-plus" severity="secondary" class="mr-2" (onClick)="openNew()"></p-button>
-    </ng-template>
+<p-toast></p-toast>
 
-    <ng-template #end>
-        <p-button label="Export" icon="pi pi-upload" severity="secondary" (onClick)="exportCSV()"></p-button>
-    </ng-template>
-</p-toolbar>
-
-<p-table
-    #dt
-    [value]="leaveRequests()"
-    [rows]="10"
-    [columns]="cols"
-    [paginator]="true"
-    [globalFilterFields]="['employeeName', 'leaveType', 'status', 'approvedBy']"
-    [tableStyle]="{ 'min-width': '75rem' }"
-    [(selection)]="selectedRequests"
-    [rowHover]="true"
-    dataKey="id"
-    currentPageReportTemplate="Showing {first} to {last} of {totalRecords} requests"
-    [showCurrentPageReport]="true"
-    [rowsPerPageOptions]="[10, 20, 30]"
->
-    <ng-template #caption>
-        <div class="flex items-center justify-between">
-            <h5 class="m-0">Manage Leave Requests</h5>
-            <p-iconfield>
-                <p-inputicon styleClass="pi pi-search" />
-                <input pInputText type="text" (input)="onGlobalFilter(dt, $event)" placeholder="Search..." />
-            </p-iconfield>
+<div class="card">
+    <p-toolbar>
+        <div class="p-toolbar-group-left">
+            <button pButton label="New Leave Request" icon="pi pi-plus" class="p-button-success mr-2"
+                (click)="openNew()"></button>
         </div>
-    </ng-template>
-    <ng-template #header>
-        <tr>
-            <th style="width: 3rem">
-                <p-tableHeaderCheckbox />
-            </th>
-            <th pSortableColumn="employeeName" style="min-width:12rem">
-                Employee
-                <p-sortIcon field="employeeName" />
-            </th>
-            <th pSortableColumn="leaveType" style="min-width:10rem">
-                Leave Type
-                <p-sortIcon field="leaveType" />
-            </th>
-            <th style="min-width:12rem">Dates</th>
-            <th pSortableColumn="daysRequested" style="min-width:8rem">
-                Days
-                <p-sortIcon field="daysRequested" />
-            </th>
-            <th style="min-width:16rem">Reason</th>
-            <th pSortableColumn="status" style="min-width:10rem">
-                Status
-                <p-sortIcon field="status" />
-            </th>
-            <th pSortableColumn="approvedBy" style="min-width:12rem">
-                Approved By
-                <p-sortIcon field="approvedBy" />
-            </th>
-            <th style="min-width: 12rem"></th>
-        </tr>
-    </ng-template>
-    <ng-template #body let-request>
-        <tr>
-            <td style="width: 3rem">
-                <p-tableCheckbox [value]="request" />
-            </td>
-            <td style="min-width: 12rem">{{ request.employeeName }}</td>
-            <td>{{ request.leaveType }}</td>
-            <td>{{ request.startDate | date:'shortDate' }} - {{ request.endDate | date:'shortDate' }}</td>
-            <td>{{ request.daysRequested }}</td>
-            <td style="min-width: 16rem">{{ request.reason | slice:0:50 }}{{ request.reason.length > 50 ? '...' : '' }}</td>
-            <td>
-                <p-tag [value]="request.status" [severity]="getStatusSeverity(request.status)"></p-tag>
-            </td>
-            <td>{{ request.approvedBy || 'N/A' }}</td>
-            <td>
-                <p-button icon="pi pi-pencil" class="mr-2" [rounded]="true" [outlined]="true" (click)="editLeave(request)"></p-button>
-                <p-button icon="pi pi-trash" severity="danger" [rounded]="true" [outlined]="true" (click)="deleteLeave(request)"></p-button>
-            </td>
-        </tr>
-    </ng-template>
-</p-table>
+    </p-toolbar>
 
-<p-dialog [(visible)]="leaveDialog" [style]="{ width: '550px' }" header="Leave Request Details" [modal]="true">
-    <ng-template #content>
-        <div class="flex flex-col gap-6">
-            <div>
-                <label for="employeeName" class="block font-bold mb-3">Employee Name</label>
-                <input type="text" pInputText id="employeeName" [(ngModel)]="leaveRequest.employeeName" required autofocus />
-            </div>
+    <p-table [value]="leaveRequests" responsiveLayout="scroll" dataKey="id">
+        <ng-template pTemplate="header">
+            <tr>
+                <th>Employee Name</th>
+                <th>Leave Type</th>
+                <th>Start Date</th>
+                <th>End Date</th>
+                <th>Days</th>
+                <th>Reason</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-request>
+            <tr>
+                <td>{{ request.employeeName || 'N/A' }}</td>
+                <td>{{ request.leaveType }}</td>
+                <td>{{ request.startDate | date: 'mediumDate' }}</td>
+                <td>{{ request.endDate | date: 'mediumDate' }}</td>
+                <td>{{ request.daysRequested }}</td>
+                <td>{{ request.reason }}</td>
+                <td>
+                    <span [ngClass]="{
+              'text-warning': request.status === 'PENDING',
+              'text-success': request.status === 'APPROVED',
+              'text-danger': request.status === 'REJECTED'
+            }">
+                        {{ request.status }}
+                    </span>
+                </td>
+                <td>
+                    <button *ngIf="request.status === 'PENDING'" pButton icon="pi pi-check"
+                        class="p-button-rounded p-button-success mr-2" (click)="approveLeave(request)"></button>
+                    <button *ngIf="request.status === 'PENDING'" pButton icon="pi pi-times"
+                        class="p-button-rounded p-button-danger mr-2" (click)="rejectLeave(request)"></button>
+                    <button pButton icon="pi pi-pencil" class="p-button-rounded p-button-info mr-2"
+                        (click)="editLeave(request)"></button>
+                    <button pButton icon="pi pi-trash" class="p-button-rounded p-button-warning"
+                        (click)="deleteLeave(request)"></button>
+                </td>
+            </tr>
+        </ng-template>
+    </p-table>
+</div>
 
-            <div>
-                <label for="leaveType" class="block font-bold mb-3">Leave Type</label>
-                <p-dropdown [options]="leaveTypes" [(ngModel)]="leaveRequest.leaveType"
-                           placeholder="Select Leave Type" inputId="leaveType"></p-dropdown>
-            </div>
-
-            <div class="grid">
-                <div class="col-6">
-                    <label for="startDate" class="block font-bold mb-3">Start Date</label>
-                    <p-calendar id="startDate" [(ngModel)]="leaveRequest.startDate" [showIcon]="true"
-                               (onSelect)="calculateDays()"></p-calendar>
-                </div>
-                <div class="col-6">
-                    <label for="endDate" class="block font-bold mb-3">End Date</label>
-                    <p-calendar id="endDate" [(ngModel)]="leaveRequest.endDate" [showIcon]="true"
-                               (onSelect)="calculateDays()"></p-calendar>
-                </div>
-            </div>
-
-            <div>
-                <label for="daysRequested" class="block font-bold mb-3">Days Requested</label>
-                <p-inputNumber id="daysRequested" [(ngModel)]="leaveRequest.daysRequested" [readonly]="true"></p-inputNumber>
-            </div>
-
-            <div>
-                <label for="reason" class="block font-bold mb-3">Reason</label>
-                <textarea pInputTextarea id="reason" [(ngModel)]="leaveRequest.reason" rows="3"></textarea>
-            </div>
-
-            <div *ngIf="leaveRequest.status === 'APPROVED'">
-                <label for="approvedBy" class="block font-bold mb-3">Approved By</label>
-                <input type="text" pInputText id="approvedBy" [(ngModel)]="leaveRequest.approvedBy" />
-            </div>
+<p-dialog header="Leave Request" [(visible)]="leaveDialog" [modal]="true" [style]="{ width: '500px' }"
+    [closable]="false">
+    <div class="p-fluid">
+        <div class="p-field">
+            <label for="leaveType">Leave Type</label>
+            <!-- <p-dropdown [options]="leaveTypes" [(ngModel)]="leaveRequest.leaveType" placeholder="Select a leave type"
+                optionLabel="label" optionValue="value" [showClear]="true" required></p-dropdown> -->
         </div>
-    </ng-template>
 
-    <ng-template #footer>
-        <p-button label="Cancel" icon="pi pi-times" text (click)="hideDialog()"></p-button>
-        <p-button label="Save" icon="pi pi-check" (click)="saveLeave()"></p-button>
-    </ng-template>
+        <div class="p-field">
+            <label for="startDate">Start Date</label>
+            <p-calendar [(ngModel)]="leaveRequest.startDate" inputId="startDate" dateFormat="yy-mm-dd"></p-calendar>
+        </div>
+
+        <div class="p-field">
+            <label for="endDate">End Date</label>
+            <p-calendar [(ngModel)]="leaveRequest.endDate" inputId="endDate" dateFormat="yy-mm-dd"></p-calendar>
+        </div>
+
+        <div class="p-field">
+            <label for="reason">Reason</label>
+            <textarea pInputTextarea [(ngModel)]="leaveRequest.reason" rows="3"></textarea>
+        </div>
+    </div>
+
+    <div class="p-dialog-footer">
+        <button pButton label="Cancel" icon="pi pi-times" class="p-button-text" (click)="hideDialog()"></button>
+        <button pButton label="Save" icon="pi pi-check" class="p-button-text" (click)="saveLeave()"></button>
+    </div>
 </p-dialog>
-
-<p-confirmdialog [style]="{ width: '450px' }" />

@@ -4,31 +4,67 @@
             <h4>Invoices</h4>
         </ng-template>
         <ng-template pTemplate="right">
-            <p-button label="New Invoice" icon="pi pi-plus" (click)="createInvoice()"></p-button>
+            <p-button label="New Invoice" icon="pi pi-plus" (onClick)="openNewInvoice()"></p-button>
         </ng-template>
     </p-toolbar>
+
+    <p-dialog [(visible)]="invoiceDialog" header="New Invoice" [modal]="true" [style]="{width: '500px'}">
+        <div class="flex flex-col gap-4">
+            <div>
+                <label class="block mb-2">Invoice Date</label>
+                <p-calendar [(ngModel)]="invoice.invoiceDate" dateFormat="yy-mm-dd" showIcon="true"></p-calendar>
+            </div>
+
+            <div>
+                <label class="block mb-2">Due Date</label>
+                <p-calendar [(ngModel)]="invoice.dueDate" dateFormat="yy-mm-dd" showIcon="true"></p-calendar>
+            </div>
+
+            <div>
+                <label class="block mb-2">Total Amount</label>
+                <input pInputText type="number" [(ngModel)]="invoice.totalAmount" />
+            </div>
+
+            <div>
+                <label class="block mb-2">Status</label>
+                <p-dropdown [options]="statusOptions" [(ngModel)]="invoice.status"
+                    placeholder="Select Status"></p-dropdown>
+            </div>
+
+            <div>
+                <label class="block mb-2">Items</label>
+                <textarea pInputTextarea [(ngModel)]="invoice.items" rows="3"></textarea>
+            </div>
+        </div>
+
+        <ng-template pTemplate="footer">
+            <p-button label="Cancel" icon="pi pi-times" text (click)="hideDialog()"></p-button>
+            <p-button label="Save" icon="pi pi-check" (click)="saveInvoice()"></p-button>
+        </ng-template>
+    </p-dialog>
 
     <p-table [value]="invoices" [paginator]="true" [rows]="10">
         <ng-template pTemplate="header">
             <tr>
-                <th>Number</th>
-                <th>Client</th>
-                <th>Date</th>
-                <th>Amount</th>
+                <th>Invoice Date</th>
+                <th>due Date</th>
+                <th>total Amount</th>
                 <th>Status</th>
+                <th>Items</th>
                 <th>Actions</th>
             </tr>
         </ng-template>
         <ng-template pTemplate="body" let-invoice>
             <tr>
-                <td>{{invoice.number}}</td>
-                <td>{{invoice.clientName}}</td>
-                <td>{{invoice.date | date}}</td>
-                <td>{{invoice.amount | currency}}</td>
+                <td>{{invoice.invoiceDate | date}}</td>
+                <td>{{invoice.dueDate | date}}</td>
+                <td>{{invoice.totalAmount }}</td>
                 <td>
                     <p-tag [value]="invoice.status" [severity]="getStatusSeverity(invoice.status)">
                     </p-tag>
                 </td>
+                <td>{{invoice.items}}</td>
+
                 <td>
                     <button pButton icon="pi pi-eye" (click)="viewInvoice(invoice)"></button>
                     <button pButton icon="pi pi-print" (click)="printInvoice(invoice)"></button>

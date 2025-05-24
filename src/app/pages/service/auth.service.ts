@@ -23,7 +23,7 @@ interface LoginResponse {
 }
 @Injectable({ providedIn: 'root' })
 export class AuthService {
-    private baseUrl = 'http://localhost:8080/api/auth';
+    private baseUrl = 'http://localhost:4001/api/auth';
     private tokenKey = 'token';
 
     constructor(private http: HttpClient, private router: Router) { }
