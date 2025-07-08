@@ -5,7 +5,7 @@ export interface Task {
     id: string;
     name: string;
     description?: string;
-    status: 'To Do' | 'In Progress' | 'Done';
+    status: 'NOT_STARTED' | 'IN_PROGRESS' | 'COMPLETED';
     priority?: string;
     assignedTo?: string;
     projectId: string;
@@ -43,7 +43,7 @@ export class TaskService {
 
     // Update an existing task
     updateTask(taskId: string, task: any): Observable<any> {
-        return this.http.put(`${this.apiUrl}/tasks/${taskId}`, task, {
+        return this.http.put(`${this.apiUrl}/tasks/update/${taskId}`, task, {
             headers: this.getHeaders()
         });
     }
@@ -62,7 +62,9 @@ export class TaskService {
         });
     }
     getTasksByProject(projectId: string): Observable<Task[]> {
-        return this.http.get<Task[]>(`${this.apiUrl}/by-project/${projectId}`);
+        return this.http.get<Task[]>(`${this.apiUrl}/tasks/by-project/${projectId}`, {
+            headers: this.getHeaders()
+        });
     }
 
     updateTaskStatus(taskId: string, status: string): Observable<Task> {

@@ -1,4 +1,4 @@
-import { Component, NgModule, OnInit, inject } from '@angular/core';
+import { Component, NgModule, OnInit, ViewChild, inject } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { FormBuilder, FormGroup, FormsModule, Validators } from '@angular/forms';
 import { CalendarModule } from 'primeng/calendar';
@@ -14,7 +14,7 @@ import { InputTextModule } from 'primeng/inputtext';
 import { InputTextarea } from 'primeng/inputtextarea';
 import { MultiSelectModule } from 'primeng/multiselect';
 import { ProgressBarModule } from 'primeng/progressbar';
-import { TableModule } from 'primeng/table';
+import { Table, TableModule } from 'primeng/table';
 import { TagModule } from 'primeng/tag';
 import { ToastModule } from 'primeng/toast';
 import { ToolbarModule } from 'primeng/toolbar';
@@ -67,6 +67,7 @@ interface LeaveRequest {
 
 export class LeaveRequestComponent implements OnInit {
     private http = inject(HttpClient);
+    private messageService = inject(MessageService);
     private baseUrl = 'http://localhost:4007/api/leaves';
 
     leaveRequests: LeaveRequest[] = [];
@@ -74,13 +75,9 @@ export class LeaveRequestComponent implements OnInit {
     leaveDialog: boolean = false;
     submitted: boolean = false;
 
-    leaveTypes = [
-        { label: 'Vacation', value: 'Vacation' },
-        { label: 'Sick Leave', value: 'Sick Leave' },
-        { label: 'Personal', value: 'Personal' }
-    ];
+    constructor() {}
 
-    constructor() { }
+    @ViewChild('dt') dt!: Table;
 
     ngOnInit(): void {
         this.fetchLeaveRequests();
@@ -88,13 +85,12 @@ export class LeaveRequestComponent implements OnInit {
 
     createEmptyLeaveRequest(): LeaveRequest {
         return {
-            employeeId: 1, // Set dynamically in real app
-            //leaveType: '',
+            employeeId: 1,
             startDate: new Date(),
             endDate: new Date(),
             daysRequested: 1,
             reason: '',
-            status: 'PENDING',
+            status: 'PENDING'
         };
     }
 
@@ -110,9 +106,8 @@ export class LeaveRequestComponent implements OnInit {
     }
 
     deleteLeave(request: LeaveRequest) {
-        // If backend DELETE is implemented, use:
-        // this.http.delete(`${this.baseUrl}/${request.id}`).subscribe(() => this.removeFromList(request.id!));
         this.removeFromList(request.id!);
+        this.messageService.add({ severity: 'warn', summary: 'Deleted', detail: 'Leave request deleted' });
     }
 
     removeFromList(id: number) {
@@ -131,41 +126,67 @@ export class LeaveRequestComponent implements OnInit {
             const isNew = !this.leaveRequest.id;
 
             if (isNew) {
-                this.http.post<LeaveRequest>(`${this.baseUrl}/submit`, this.leaveRequest).subscribe(saved => {
-                    this.leaveRequests.push(saved);
-                    this.leaveDialog = false;
+                this.http.post<LeaveRequest>(`${this.baseUrl}/submit`, this.leaveRequest).subscribe({
+                    next: saved => {
+                        this.leaveRequests.push(saved);
+                        this.leaveDialog = false;
+                        this.messageService.add({ severity: 'success', summary: 'Saved', detail: 'Leave request submitted' });
+                    },
+                    error: err => {
+                        console.error('Error saving leave:', err);
+                        this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Could not submit leave request' });
+                    }
                 });
             } else {
-                // Optionally update if backend supports it
                 this.leaveDialog = false;
             }
         }
     }
 
     fetchLeaveRequests() {
-        const token = localStorage.getItem('token'); // Adjust this based on where you store the token
+        const token = localStorage.getItem('token');
         const headers = new HttpHeaders({
             'Authorization': `Bearer ${token}`
         });
+
         this.http.get<LeaveRequest[]>(`${this.baseUrl}/all`, { headers }).subscribe({
-        next: data => {
-            this.leaveRequests = data;
-        },
-        error: err => {
-            console.error('Error fetching leave requests:', err);
-        }
-    });
+            next: data => {
+                this.leaveRequests = data;
+            },
+            error: err => {
+                console.error('Error fetching leave requests:', err);
+                this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Could not load leave requests' });
+            }
+        });
     }
 
     approveLeave(request: LeaveRequest) {
-        this.http.put<LeaveRequest>(`${this.baseUrl}/approve/${request.id}`, {}).subscribe(updated => {
-            this.updateRequestInList(updated);
+        const headers = this.getAuthHeaders();
+
+        this.http.put<LeaveRequest>(`${this.baseUrl}/approve/${request.id}`, {}, { headers }).subscribe({
+            next: updated => {
+                this.updateRequestInList(updated);
+                this.messageService.add({ severity: 'success', summary: 'Approved', detail: 'Leave request approved' });
+            },
+            error: err => {
+                console.error('Approval error:', err);
+                this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Approval failed' });
+            }
         });
     }
 
     rejectLeave(request: LeaveRequest) {
-        this.http.put<LeaveRequest>(`${this.baseUrl}/reject/${request.id}`, {}).subscribe(updated => {
-            this.updateRequestInList(updated);
+        const headers = this.getAuthHeaders();
+
+        this.http.put<LeaveRequest>(`${this.baseUrl}/reject/${request.id}`, {}, { headers }).subscribe({
+            next: updated => {
+                this.updateRequestInList(updated);
+                this.messageService.add({ severity: 'warn', summary: 'Rejected', detail: 'Leave request rejected' });
+            },
+            error: err => {
+                console.error('Rejection error:', err);
+                this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Rejection failed' });
+            }
         });
     }
 
@@ -174,5 +195,23 @@ export class LeaveRequestComponent implements OnInit {
         if (index !== -1) {
             this.leaveRequests[index] = updated;
         }
+    }
+
+    getStatusSeverity(status: string): 'success' | 'info' | 'warn' | 'danger' {
+        switch (status) {
+            case 'APPROVED': return 'success';
+            case 'PENDING': return 'info';
+            case 'REJECTED': return 'danger';
+            default: return 'warn';
+        }
+    }
+
+    onGlobalFilter(table: Table, event: Event) {
+        table.filterGlobal((event.target as HTMLInputElement).value, 'contains');
+    }
+
+    private getAuthHeaders(): HttpHeaders {
+        const token = localStorage.getItem('token') || '';
+        return new HttpHeaders({ 'Authorization': `Bearer ${token}` });
     }
 }

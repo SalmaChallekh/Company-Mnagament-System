@@ -1,10 +1,20 @@
 <div class="kanban-board">
-    <div class="column" *ngFor="let column of ['To Do', 'In Progress', 'Done']">
-        <h3>{{ column }}</h3>
-        <div cdkDropList [cdkDropListData]="getList(column)" class="task-list"
-            (cdkDropListDropped)="drop($event, column)">
-            <div class="task-card" *ngFor="let task of getList(column)" cdkDrag>
-                {{ task.name }}
+    <div class="column" *ngFor="let column of columns" [attr.data-status]="column.id">
+        <h3 class="column-title">{{ column.title }} ({{ getList(column.id).length }})</h3>
+
+        <div class="task-list" cdkDropList [cdkDropListData]="getList(column.id)"
+            [cdkDropListConnectedTo]="connectedDropLists" (cdkDropListDropped)="drop($event, column.id)">
+
+            <div class="task-card" *ngFor="let task of getList(column.id)" cdkDrag>
+                <div class="task-title">{{ task.name }}</div>
+                <div class="task-meta">
+                    <span class="task-priority" *ngIf="task.priority">{{ task.priority }}</span>
+                    <span class="task-assignee" *ngIf="task.assignedTo">{{ task.assignedTo }}</span>
+                </div>
+            </div>
+
+            <div *ngIf="getList(column.id).length === 0" class="empty-state">
+                No tasks in this column
             </div>
         </div>
     </div>

@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse, HttpHeaders } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { catchError, tap } from 'rxjs/operators';
 import { jwtDecode } from 'jwt-decode';
@@ -37,6 +37,13 @@ export class AuthService {
             catchError(this.handleError)
         );
     }
+    getCurrentUser(): Observable<any> {
+        const token = localStorage.getItem('token');
+        const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
+        return this.http.get<any>('http://localhost:4001/api/auth/me',  {
+            headers: this.getHeaders()
+        });
+    }
 
     // Consolidated role-related methods
     getCurrentUserRole(): string | null {
@@ -60,15 +67,15 @@ export class AuthService {
             return null;
         }
     }
-// In AuthService
-public decodeToken(token: string): TokenPayload | null {
-    try {
-        return jwtDecode<TokenPayload>(token);
-    } catch (error) {
-        console.error('Invalid token:', error);
-        return null;
+    // In AuthService
+    public decodeToken(token: string): TokenPayload | null {
+        try {
+            return jwtDecode<TokenPayload>(token);
+        } catch (error) {
+            console.error('Invalid token:', error);
+            return null;
+        }
     }
-}
     // Existing utility methods
     logout(): void {
         localStorage.removeItem(this.tokenKey);
@@ -95,5 +102,13 @@ public decodeToken(token: string): TokenPayload | null {
             errorMsg = `Server error: ${error.status}, ${error.message}`;
         }
         return throwError(() => new Error(errorMsg));
+    }
+     // Helper method for headers
+    private getHeaders(): HttpHeaders {
+        const token = localStorage.getItem('token');
+        return new HttpHeaders({
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+        });
     }
 }

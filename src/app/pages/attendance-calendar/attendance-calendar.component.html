@@ -1,1 +1,56 @@
-<p>attendance-calendar works!</p>
+<p-toolbar class="mb-3">
+  <div class="p-toolbar-group-left">
+    <h2 class="page-title">Attendance Calendar</h2>
+  </div>
+</p-toolbar>
+
+<div class="calendar-wrapper">
+  <!-- Calendar Panel -->
+  <div class="calendar-panel">
+    <p-calendar
+      [(ngModel)]="date"
+      view="month"
+      [inline]="true"
+      showIcon="true"
+      [yearNavigator]="true"
+      yearRange="2010:2030"
+      dateFormat="yy-mm"
+      (onSelect)="onDateChange($event)"
+      styleClass="custom-calendar"
+    ></p-calendar>
+  </div>
+
+  <!-- Attendance Summary -->
+  <div class="attendance-summary">
+    <h3 class="summary-title mb-3">Attendance for {{ date | date: 'MMMM yyyy' }}</h3>
+
+    <p-dropdown
+      [options]="employees"
+      optionLabel="name"
+      optionValue="id"
+      [(ngModel)]="selectedEmployeeId"
+      placeholder="Select an employee"
+      (onChange)="onEmployeeChange()"
+      styleClass="employee-dropdown"
+    ></p-dropdown>
+
+    <div class="attendance-grid">
+      <div
+        *ngFor="let day of daysInMonth"
+        class="attendance-day"
+        [ngClass]="{
+          present: isPresent(day),
+          absent: isAbsent(day),
+          nodata: !isPresent(day) && !isAbsent(day)
+        }"
+      >
+        <div class="day-label">{{ formatDate(day) }}</div>
+        <div class="status-text">
+          <ng-container *ngIf="isPresent(day)">✅ Present</ng-container>
+          <ng-container *ngIf="isAbsent(day)">❌ Absent</ng-container>
+          <ng-container *ngIf="!isPresent(day) && !isAbsent(day)">– No Data</ng-container>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

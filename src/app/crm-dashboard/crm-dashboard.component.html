@@ -1,0 +1,82 @@
+<div class="grid">
+    <!-- Top Stats -->
+    <div class="col-12 md:col-6 xl:col-3" *ngFor="let stat of stats">
+        <p-card styleClass="text-center shadow-2 border-round-xl border-pink-300 border-1 p-4">
+            <div class="text-xl font-semibold text-pink-600 mb-1">{{ stat.label }}</div>
+            <div class="text-3xl font-bold text-pink-500">{{ stat.value }}</div>
+            <div class="text-sm text-color-secondary mt-1">{{ stat.subtext }}</div>
+        </p-card>
+    </div>
+
+    <!-- Recent Interactions -->
+    <div class="col-12 md:col-6">
+        <p-card header="Recent Interactions" styleClass="shadow-2 border-round-xl border-pink-300 border-1">
+            <ul class="p-0 m-0 list-none">
+                <li class="mb-3 border-bottom-1 border-pink-100 pb-2" *ngFor="let interaction of interactions">
+                    <div class="flex justify-content-between align-items-start">
+                        <div>
+                            <div class="font-medium text-900">{{ interaction.name }}</div>
+                            <div class="text-sm text-color-secondary">{{ interaction.message }}</div>
+                        </div>
+                        <span class="text-sm text-pink-400">{{ interaction.date }}</span>
+                    </div>
+                </li>
+            </ul>
+        </p-card>
+    </div>
+
+    <!-- Upcoming Meetings -->
+    <div class="col-12 md:col-6">
+        <p-card header="Upcoming Meetings" styleClass="shadow-2 border-round-xl border-pink-300 border-1">
+            <ul class="p-0 m-0 list-none">
+                <li class="mb-3 border-bottom-1 border-pink-100 pb-2" *ngFor="let meeting of meetings">
+                    <div class="flex justify-content-between align-items-center">
+                        <span>{{ meeting.subject }}</span>
+                        <span class="text-sm text-pink-400">{{ meeting.time }}</span>
+                    </div>
+                </li>
+            </ul>
+        </p-card>
+    </div>
+
+    <!-- Sales Pipeline -->
+    <div class="col-12 md:col-6">
+        <p-card header="Sales Pipeline" styleClass="shadow-2 border-round-xl border-pink-300 border-1">
+            <p-chart type="bar" [data]="pipelineData" [options]="pipelineOptions" style="height: 300px"></p-chart>
+        </p-card>
+    </div>
+
+    <!-- Calendar -->
+    <!-- <div class="col-12 md:col-6">
+        <p-card header="Calendar" styleClass="shadow-2 border-round-xl border-pink-300 border-1">
+            <p-calendar [(ngModel)]="selectedDate" inline="true" styleClass="w-full pink-calendar"></p-calendar>
+        </p-card>
+    </div> -->
+
+    <!-- Contacts Table -->
+    <div class="col-12">
+        <p-card header="Clients & Vendors" styleClass="shadow-2 border-round-xl border-pink-300 border-1">
+            <p-table [value]="contacts" [paginator]="true" [rows]="5">
+                <ng-template pTemplate="header">
+                    <tr>
+                        <th>Name</th>
+                        <th>Type</th>
+                        <th>Email</th>
+                    </tr>
+                </ng-template>
+                <ng-template pTemplate="body" let-contact>
+                    <tr>
+                        <td>{{ contact.name }}</td>
+                        <td>
+                            <span
+                                [class]="contact.type === 'Client' ? 'text-pink-600 font-medium' : 'text-purple-600 font-medium'">
+                                {{ contact.type }}
+                            </span>
+                        </td>
+                        <td>{{ contact.email }}</td>
+                    </tr>
+                </ng-template>
+            </p-table>
+        </p-card>
+    </div>
+</div>

@@ -7,6 +7,7 @@ import { CardModule } from 'primeng/card';
 import { DropdownModule } from 'primeng/dropdown';
 import { CalendarModule } from 'primeng/calendar';
 import { ChartModule } from 'primeng/chart';
+import { AttendanceService } from '../../services/attendance.service'; // adjust path if needed
 
 interface Report {
     id: string;
@@ -16,6 +17,7 @@ interface Report {
     generatedDate: Date;
     downloadCount: number;
 }
+
 @Component({
     selector: 'app-reports',
     standalone: true,
@@ -44,25 +46,22 @@ export class ReportsComponent {
         { label: 'Leave Reports', value: 'LEAVE' },
         { label: 'Tax Reports', value: 'TAX' }
     ];
-    constructor() {
+    constructor(private reportService: AttendanceService) {
         this.initializeChart();
-        this.loadSampleData();
+        //this.loadAttendanceData();
     }
     initializeChart() {
         this.chartData = {
-            labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
-            datasets: [
-                {
-                    label: 'Reports Generated',
-                    data: [12, 19, 15, 25, 18, 22],
-                    backgroundColor: 'rgba(54, 162, 235, 0.2)',
-                    borderColor: 'rgba(54, 162, 235, 1)',
-                    borderWidth: 1
-                }
-            ]
+            labels: [],
+            datasets: []
         };
         this.chartOptions = {
             responsive: true,
+            plugins: {
+                legend: {
+                    position: 'top'
+                }
+            },
             scales: {
                 y: {
                     beginAtZero: true
@@ -70,35 +69,42 @@ export class ReportsComponent {
             }
         };
     }
-    loadSampleData() {
-        const sampleData: Report[] = [
-            {
-                id: '1',
-                title: 'Monthly Payroll June 2023',
-                type: 'PAYROLL',
-                period: 'June 2023',
-                generatedDate: new Date(2023, 5, 30),
-                downloadCount: 24
-            },
-            {
-                id: '2',
-                title: 'Attendance Summary Q2 2023',
-                type: 'ATTENDANCE',
-                period: 'Q2 2023',
-                generatedDate: new Date(2023, 6, 15),
-                downloadCount: 18
-            },
-            {
-                id: '3',
-                title: 'Leave Balance Report',
-                type: 'LEAVE',
-                period: 'June 2023',
-                generatedDate: new Date(2023, 5, 28),
-                downloadCount: 32
-            }
-        ];
-        this.reports.set(sampleData);
-    }
+
+    // loadAttendanceData() {
+    //     const today = new Date();
+    //     const year = today.getFullYear();
+    //     const month = today.getMonth() + 1;
+
+    //     this.reportService.getMonthlySummary(year, month).subscribe({
+    //         next: (data) => {
+    //             const attendance = data[0] || { presentDays: 0, leaveDays: 0 };
+    //             this.chartData = {
+    //                 labels: ['Present Days', 'Leave Days'],
+    //                 datasets: [
+    //                     {
+    //                         label: 'Monthly Attendance',
+    //                         data: [attendance.presentDays, attendance.leaveDays],
+    //                         backgroundColor: ['#42A5F5', '#FFA726']
+    //                     }
+    //                 ]
+    //             };
+
+    //             const newReport: Report = {
+    //                 id: Math.random().toString(36).substring(2, 9),
+    //                 title: `Attendance Summary - ${year}-${month.toString().padStart(2, '0')}`,
+    //                 type: 'ATTENDANCE',
+    //                 period: `${year}-${month.toString().padStart(2, '0')}`,
+    //                 generatedDate: new Date(),
+    //                 downloadCount: 0
+    //             };
+    //             this.reports.set([newReport, ...this.reports()]);
+    //         },
+    //         error: (err) => {
+    //             console.error('Error fetching attendance summary:', err);
+    //         }
+    //     });
+    // }
+
     generateReport() {
         const newReport: Report = {
             id: Math.random().toString(36).substring(2, 9),
@@ -110,6 +116,7 @@ export class ReportsComponent {
         };
         this.reports.set([newReport, ...this.reports()]);
     }
+
     getPeriodLabel(): string {
         if (this.dateRange[0] && this.dateRange[1]) {
             if (this.dateRange[0].getMonth() === this.dateRange[1].getMonth()) {
@@ -119,9 +126,17 @@ export class ReportsComponent {
         }
         return 'Custom Period';
     }
+
     downloadReport(report: Report) {
-        // In a real app, this would trigger a file download
         report.downloadCount++;
         this.reports.set([...this.reports()]);
+    }
+
+    exportCsv() {
+        this.reportService.exportDailyCsv();
+    }
+
+    exportExcel() {
+        this.reportService.exportDailyExcel();
     }
 }

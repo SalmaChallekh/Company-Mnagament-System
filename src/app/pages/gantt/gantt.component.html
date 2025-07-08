@@ -1,0 +1,70 @@
+<div class="gantt-container p-4">
+    <p-card header="Project Gantt Chart" [style]="{ 'min-height': '80vh' }">
+        <div class="flex justify-content-between align-items-center mb-4">
+            <div class="flex align-items-center gap-3">
+                <label for="project" class="font-semibold">Select Project:</label>
+                <p-dropdown [options]="projects" [(ngModel)]="selectedProject" optionLabel="name"
+                    (onChange)="onProjectChange()" placeholder="Select a Project"></p-dropdown>
+            </div>
+            <p-button icon="pi pi-plus" label="Add Task"severity="secondary" (click)="showAddTaskDialog()"></p-button>
+        </div>
+
+        <div class="gantt-chart">
+            <div class="gantt-header">
+                <div class="gantt-header-item">Task Name</div>
+                <div class="gantt-header-item">Start Date</div>
+                <div class="gantt-header-item">End Date</div>
+                <div class="gantt-header-item">Duration</div>
+                <div class="gantt-header-item">Progress</div>
+                <div class="gantt-header-item">Status</div>
+            </div>
+
+            <div class="gantt-body">
+                <div class="gantt-row" *ngFor="let task of filteredTasks">
+                    <div class="gantt-cell task-name">{{ task.name }}</div>
+                    <div class="gantt-cell">{{ task.startDate | date:'shortDate' }}</div>
+                    <div class="gantt-cell">{{ task.endDate | date:'shortDate' }}</div>
+                    <div class="gantt-cell">{{ task.duration }} days</div>
+                    <div class="gantt-cell">
+                        <p-progressBar [value]="task.progress" [showValue]="true"></p-progressBar>
+                    </div>
+                    <div class="gantt-cell">
+                        <span [class]="'status-badge ' + task.statusClass">
+                            {{ task.status | titlecase }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </p-card>
+
+    <!-- Add Task Dialog -->
+    <p-dialog header="Add New Task" [(visible)]="displayTaskDialog" [style]="{ width: '50vw' }">
+        <div class="p-fluid grid">
+            <div class="col-12">
+                <label for="taskName">Task Name</label>
+                <input id="taskName" type="text" pInputText [(ngModel)]="newTask.name" />
+            </div>
+            <div class="col-12 md:col-6">
+                <label for="startDate">Start Date</label>
+                <p-calendar id="startDate" [(ngModel)]="newTask.startDate" dateFormat="yy-mm-dd"></p-calendar>
+            </div>
+            <div class="col-12 md:col-6">
+                <label for="endDate">End Date</label>
+                <p-calendar id="endDate" [(ngModel)]="newTask.endDate" dateFormat="yy-mm-dd"></p-calendar>
+            </div>
+            <div class="col-12 md:col-6">
+                <label for="status">Status</label>
+                <p-dropdown id="status" [options]="statusOptions" [(ngModel)]="newTask.status"></p-dropdown>
+            </div>
+            <div class="col-12 md:col-6">
+                <label for="progress">Progress (%)</label>
+                <p-inputNumber id="progress" [(ngModel)]="newTask.progress" [min]="0" [max]="100"></p-inputNumber>
+            </div>
+        </div>
+        <ng-template pTemplate="footer">
+            <p-button label="Cancel" icon="pi pi-times" (click)="displayTaskDialog = false"></p-button>
+            <p-button label="Save" icon="pi pi-check" (click)="addTask()"></p-button>
+        </ng-template>
+    </p-dialog>
+</div>

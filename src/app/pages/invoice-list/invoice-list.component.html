@@ -1,75 +1,98 @@
-<div class="card">
-    <p-toolbar>
-        <ng-template pTemplate="left">
-            <h4>Invoices</h4>
-        </ng-template>
-        <ng-template pTemplate="right">
-            <p-button label="New Invoice" icon="pi pi-plus" (onClick)="openNewInvoice()"></p-button>
-        </ng-template>
-    </p-toolbar>
+<p-toast></p-toast>
+<p-confirmDialog></p-confirmDialog>
 
-    <p-dialog [(visible)]="invoiceDialog" header="New Invoice" [modal]="true" [style]="{width: '500px'}">
-        <div class="flex flex-col gap-4">
-            <div>
-                <label class="block mb-2">Invoice Date</label>
-                <p-calendar [(ngModel)]="invoice.invoiceDate" dateFormat="yy-mm-dd" showIcon="true"></p-calendar>
-            </div>
+<!-- Toolbar -->
+<p-toolbar styleClass="mb-6">
+    <ng-template #start>
+        <p-button label="Add Invoice" icon="pi pi-plus" severity="secondary" class="mr-2" (click)="openNewInvoice()" />
+    </ng-template>
+</p-toolbar>
 
-            <div>
-                <label class="block mb-2">Due Date</label>
-                <p-calendar [(ngModel)]="invoice.dueDate" dateFormat="yy-mm-dd" showIcon="true"></p-calendar>
-            </div>
+<!-- Table -->
+<p-table #dt [value]="invoices" [rows]="10" [paginator]="true" [rowHover]="true"
+    currentPageReportTemplate="Showing {first} to {last} of {totalRecords} invoices" [rowsPerPageOptions]="[10, 20, 30]"
+    [globalFilterFields]="['items', 'status']">
 
-            <div>
-                <label class="block mb-2">Total Amount</label>
-                <input pInputText type="number" [(ngModel)]="invoice.totalAmount" />
-            </div>
+    <ng-template #caption>
+        <div class="flex items-center justify-between">
+            <h5 class="m-0">Manage Invoices</h5>
+            <p-iconfield>
+                <p-inputicon styleClass="pi pi-search" />
+                <input pInputText type="text" (input)="onGlobalFilter(dt, $event)" placeholder="Search..." />
+            </p-iconfield>
+        </div>
+    </ng-template>
 
-            <div>
-                <label class="block mb-2">Status</label>
-                <p-dropdown [options]="statusOptions" [(ngModel)]="invoice.status"
-                    placeholder="Select Status"></p-dropdown>
-            </div>
+    <ng-template pTemplate="header">
+        <tr>
+            <th pSortableColumn="invoiceDate">Invoice Date <p-sortIcon field="invoiceDate" /></th>
+            <th pSortableColumn="dueDate">Due Date <p-sortIcon field="dueDate" /></th>
+            <th pSortableColumn="totalAmount">Total Amount <p-sortIcon field="totalAmount" /></th>
+            <th pSortableColumn="status">Status <p-sortIcon field="status" /></th>
+            <th>Items</th>
+            <th style="width: 8rem">Actions</th>
+        </tr>
+    </ng-template>
 
-            <div>
-                <label class="block mb-2">Items</label>
-                <textarea pInputTextarea [(ngModel)]="invoice.items" rows="3"></textarea>
-            </div>
+    <ng-template pTemplate="body" let-invoice>
+        <tr>
+            <td>{{ invoice.invoiceDate | date: 'yyyy-MM-dd' }}</td>
+            <td>{{ invoice.dueDate | date: 'yyyy-MM-dd' }}</td>
+            <td>{{ invoice.totalAmount }}</td>
+            <td>
+                <p-tag [value]="invoice.status" [severity]="getStatusSeverity(invoice.status)"></p-tag>
+            </td>
+            <td>{{ invoice.items | slice:0:40 }}{{ invoice.items.length > 40 ? '...' : '' }}</td>
+            <td>
+                <p-button icon="pi pi-pencil" class="mr-2" [rounded]="true" [outlined]="true"
+                    (click)="editInvoice(invoice)" />
+
+                <p-button icon="pi pi-trash" severity="danger" [rounded]="true" [outlined]="true"
+                    (click)="deleteInvoice(invoice)" />
+
+            </td>
+        </tr>
+    </ng-template>
+
+    <ng-template pTemplate="emptymessage">
+        <tr>
+            <td colspan="6">No invoices found.</td>
+        </tr>
+    </ng-template>
+</p-table>
+
+<!-- Invoice Dialog -->
+<p-dialog header="New Invoice" [(visible)]="invoiceDialog" [style]="{ width: '500px' }" modal [closable]="false">
+    <div class="flex flex-col gap-4">
+        <div>
+            <label class="block font-bold mb-2">Invoice Date</label>
+            <p-calendar [(ngModel)]="invoice.invoiceDate" dateFormat="yy-mm-dd" showIcon="true"></p-calendar>
         </div>
 
-        <ng-template pTemplate="footer">
-            <p-button label="Cancel" icon="pi pi-times" text (click)="hideDialog()"></p-button>
-            <p-button label="Save" icon="pi pi-check" (click)="saveInvoice()"></p-button>
-        </ng-template>
-    </p-dialog>
+        <div>
+            <label class="block font-bold mb-2">Due Date</label>
+            <p-calendar [(ngModel)]="invoice.dueDate" dateFormat="yy-mm-dd" showIcon="true"></p-calendar>
+        </div>
 
-    <p-table [value]="invoices" [paginator]="true" [rows]="10">
-        <ng-template pTemplate="header">
-            <tr>
-                <th>Invoice Date</th>
-                <th>due Date</th>
-                <th>total Amount</th>
-                <th>Status</th>
-                <th>Items</th>
-                <th>Actions</th>
-            </tr>
-        </ng-template>
-        <ng-template pTemplate="body" let-invoice>
-            <tr>
-                <td>{{invoice.invoiceDate | date}}</td>
-                <td>{{invoice.dueDate | date}}</td>
-                <td>{{invoice.totalAmount }}</td>
-                <td>
-                    <p-tag [value]="invoice.status" [severity]="getStatusSeverity(invoice.status)">
-                    </p-tag>
-                </td>
-                <td>{{invoice.items}}</td>
+        <div>
+            <label class="block font-bold mb-2">Total Amount</label>
+            <input pInputText type="number" [(ngModel)]="invoice.totalAmount" />
+        </div>
 
-                <td>
-                    <button pButton icon="pi pi-eye" (click)="viewInvoice(invoice)"></button>
-                    <button pButton icon="pi pi-print" (click)="printInvoice(invoice)"></button>
-                </td>
-            </tr>
-        </ng-template>
-    </p-table>
-</div>
+        <div>
+            <label class="block font-bold mb-2">Status</label>
+            <p-dropdown [options]="statusOptions" [(ngModel)]="invoice.status" placeholder="Select Status"></p-dropdown>
+        </div>
+
+        <div>
+            <label class="block font-bold mb-2">Items</label>
+            <textarea pInputTextarea [(ngModel)]="invoice.items" rows="3"></textarea>
+        </div>
+    </div>
+
+    <ng-template pTemplate="footer">
+        <button pButton type="button" label="Cancel" icon="pi pi-times" class="p-button-text"
+            (click)="hideDialog()"></button>
+        <p-button label="Save" icon="pi pi-check" (click)="saveInvoice()" />
+    </ng-template>
+</p-dialog>

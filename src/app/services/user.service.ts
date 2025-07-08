@@ -31,6 +31,12 @@ export class UserService {
     private apiUrl = 'http://localhost:4001/api';
     private apiUrl2 = 'http://localhost:4002/api/admin/departments';
     constructor(private http: HttpClient) { }
+     updatePassword(userId: number | string, newPassword: string): Observable<void> {
+    const url = `${this.apiUrl}/user/password/${userId}`;
+    const body = { password: newPassword };
+    return this.http.put<void>(url, body, { headers: this.getHeaders() });
+  }
+
     private getAuthHeaders(): HttpHeaders {
         const token = localStorage.getItem('token');
         if (!token) {
@@ -60,6 +66,14 @@ export class UserService {
     createUser(request: CreateUserRequest): Observable<void> {
         return this.http.post<void>(`${this.apiUrl}/admin/create`, request, { headers: this.getHeaders() });
     }
+    updateUser(id: number, request: CreateUserRequest): Observable<void> {
+    return this.http.put<void>(`${this.apiUrl}/admin/update/${id}`, request, { headers: this.getHeaders() });
+}
+
+deleteUser(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/admin/delete/${id}`, { headers: this.getHeaders() });
+}
+
     getRoles() {
         return this.http.get<RoleOption[]>(`${this.apiUrl}/roles`, {
             headers: this.getHeaders()

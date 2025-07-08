@@ -1,0 +1,115 @@
+:host {
+  display: block;
+  padding: 2rem;
+  background-color: var(--surface-0);
+  color: var(--text-color);
+}
+
+.page-title {
+  font-size: 1.5rem;
+  font-weight: bold;
+  margin-bottom: 1rem;
+}
+
+.calendar-wrapper {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2rem;
+  justify-content: center;
+}
+
+.calendar-panel,
+.attendance-summary {
+  background: var(--surface-card);
+  box-shadow: var(--card-shadow);
+  border-radius: 12px;
+  padding: 1.5rem;
+  flex: 1 1 350px;
+  min-width: 320px;
+}
+
+.calendar-panel {
+  flex: 1 1 500px;
+  min-width: 450px;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+}
+
+
+
+
+.attendance-summary {
+  display: flex;
+  flex-direction: column;
+}
+
+.employee-dropdown {
+  width: 100%;
+  margin-bottom: 1.5rem;
+}
+
+.attendance-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 1rem;
+}
+
+.attendance-day {
+  border-radius: 10px;
+  padding: 1rem;
+  background-color: var(--surface-100);
+  box-shadow: var(--card-shadow);
+  text-align: center;
+  transition: background-color 0.3s ease;
+}
+
+.attendance-day.present {
+  background-color: var(--green-100);
+  color: var(--green-900);
+}
+
+.attendance-day.absent {
+  background-color: var(--red-100);
+  color: var(--red-900);
+}
+
+.attendance-day.nodata {
+  background-color: var(--gray-100);
+  color: var(--gray-900);
+}
+
+.day-label {
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  font-size: 1rem;
+}
+
+.status-text {
+  font-size: 0.9rem;
+}
+
+/* Custom calendar styling */
+.custom-calendar.p-calendar {
+  width: 100%;
+  max-width: 100%; /* Remove width limit */
+  font-size: 1.2rem;
+  padding: 1rem;
+}
+
+.custom-calendar .p-datepicker {
+  width: 100%;
+  max-width: 100%;
+  padding: 1.5rem;
+  font-size: 1.3rem;
+}
+
+.custom-calendar .p-datepicker-calendar td {
+  padding: 1.5rem;
+  font-size: 1.1rem;
+  text-align: center;
+}
+
+
+
+

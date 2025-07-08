@@ -1,0 +1,80 @@
+.gantt-container {
+    height: 100%;
+}
+
+.gantt-chart {
+    border: 1px solid var(--surface-border);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.gantt-header {
+    display: flex;
+    background-color: var(--surface-100);
+    font-weight: bold;
+    border-bottom: 1px solid var(--surface-border);
+}
+
+.gantt-header-item {
+    padding: 1rem;
+    flex: 1;
+    min-width: 120px;
+
+    &:first-child {
+        flex: 2;
+    }
+}
+
+.gantt-body {
+    max-height: 60vh;
+    overflow-y: auto;
+}
+
+.gantt-row {
+    display: flex;
+    border-bottom: 1px solid var(--surface-border);
+    align-items: center;
+
+    &:hover {
+        background-color: var(--surface-50);
+    }
+}
+
+.gantt-cell {
+    padding: 1rem;
+    flex: 1;
+    min-width: 120px;
+
+    &:first-child {
+        flex: 2;
+        font-weight: 500;
+    }
+}
+
+.status-badge {
+    padding: 0.25rem 0.5rem;
+    border-radius: 12px;
+    color: white;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.p-progressbar {
+    height: 1.5rem;
+    border-radius: 4px;
+}
+
+/* Responsive adjustments */
+@media screen and (max-width: 960px) {
+
+    .gantt-header,
+    .gantt-row {
+        flex-wrap: wrap;
+    }
+
+    .gantt-header-item,
+    .gantt-cell {
+        flex: 1 1 50%;
+        min-width: auto;
+    }
+}

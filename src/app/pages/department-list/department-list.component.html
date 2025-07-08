@@ -3,13 +3,9 @@
 <p-toolbar styleClass="mb-6">
     <ng-template #start>
         <p-button label="New Department" icon="pi pi-plus" severity="secondary" class="mr-2" (onClick)="openNew()" />
-        <!-- <p-button severity="secondary" label="Delete" icon="pi pi-trash" outlined
-            (onClick)="deleteSelectedDepartments()" [disabled]="!selectedDepartments || !selectedDepartments.length" /> -->
+        <p-button severity="secondary" label="Delete" icon="pi pi-trash" outlined
+            (onClick)="deleteSelectedDepartments()" [disabled]="!selectedDepartments || !selectedDepartments.length" />
     </ng-template>
-
-    <!-- <ng-template #end>
-        <p-button label="Export" icon="pi pi-upload" severity="secondary" (onClick)="exportCSV()" />
-    </ng-template> -->
 </p-toolbar>
 
 <p-table #dt [value]="departments" [rows]="10" [columns]="cols" [paginator]="true"
@@ -26,6 +22,7 @@
             </p-iconfield>
         </div>
     </ng-template>
+
     <ng-template #header>
         <tr>
             <th style="width: 3rem">
@@ -42,6 +39,7 @@
             <th style="min-width: 12rem"></th>
         </tr>
     </ng-template>
+
     <ng-template #body let-department>
         <tr>
             <td style="width: 3rem">
@@ -49,11 +47,6 @@
             </td>
             <td style="min-width: 12rem">{{ department.name }}</td>
             <td style="min-width: 12rem">{{ department.description }}</td>
-            <!-- <td style="min-width: 16rem">{{ getManagerName(department.managerId) }}</td> -->
-            <!-- <td>{{ getEmployeeCount(department.id) }}</td>
-            <td>
-                <p-tag [value]="department.status" [severity]="getSeverity(department.status)" />
-            </td> -->
             <td>
                 <p-button icon="pi pi-pencil" class="mr-2" [rounded]="true" [outlined]="true"
                     (click)="editDepartment(department)" />
@@ -64,19 +57,36 @@
     </ng-template>
 </p-table>
 
-<p-dialog [(visible)]="departmentDialog" [style]="{ width: '550px' }" header="Department Details" [modal]="true">
-    <ng-template #content>
-        <div class="flex flex-col gap-6">
-            <div>
-                <label for="name" class="block font-bold mb-3">Department Name</label>
-                <input type="text" pInputText id="name" [(ngModel)]="department.name" required autofocus />
+<p-dialog [(visible)]="departmentDialog" [style]="{ width: '550px' }" header="Department Details" [modal]="true"
+    [closable]="false" [baseZIndex]="10000">
+    <ng-template pTemplate="content">
+        <div class="flex justify-center items-center min-h-[200px]">
+            <div class="flex flex-col gap-6 w-full max-w-md">
+
+                <div>
+                    <label for="name" class="block font-bold mb-3">Department Name</label>
+                    <input type="text" pInputText id="name" [(ngModel)]="department.name" required autofocus
+                        class="w-full" />
+                </div>
+
+                <div>
+                    <label for="description" class="block font-bold mb-3">Description</label>
+                    <input type="text" pInputText id="description" [(ngModel)]="department.description" required
+                        class="w-full" />
+                </div>
+
             </div>
+        </div>
+    </ng-template>
 
-            <!-- <div>
-                <label for="manager" class="block font-bold mb-3">Manager</label>
-                <p-dropdown [options]="employees" [(ngModel)]="department.managerId" optionLabel="name" optionValue="id"
-                    placeholder="Select Manager" inputId="manager"></p-dropdown>
-            </div> -->
+    <ng-template pTemplate="footer">
+        <div class="flex justify-end gap-2 w-full">
+            <button pButton type="button" label="Cancel" icon="pi pi-times" class="p-button-text"
+                (click)="hideDialog()"></button>
 
-            <div>
-                <label for="status" class="block font-bold mb-3">Status</label>
+            <button pButton type="button" label="Save" icon="pi pi-check" (click)="saveDepartment()"></button>
+        </div>
+    </ng-template>
+</p-dialog>
+
+<p-confirmDialog></p-confirmDialog>

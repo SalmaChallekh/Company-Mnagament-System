@@ -1,0 +1,53 @@
+<!-- evaluation-form.component.html -->
+<form [formGroup]="evaluationForm" class="flex flex-col gap-6 w-full max-w-md">
+    <div class="flex justify-center items-center min-h-[200px]">
+        <div class="flex flex-col gap-6 w-full max-w-md">
+            <!-- Employee -->
+            <div>
+                <label for="employeeId" class="block font-bold mb-3">Employee</label>
+                <p-dropdown id="employeeId" [options]="employees" formControlName="employeeId"
+                    placeholder="Select Employee" class="w-full">
+                </p-dropdown>
+            </div>
+
+            <!-- Date -->
+            <div>
+                <label for="evaluationDate" class="block font-bold mb-3">Date</label>
+                <p-calendar id="evaluationDate" formControlName="evaluationDate" dateFormat="yy-mm-dd" showIcon="true"
+                    class="w-full">
+                </p-calendar>
+            </div>
+
+            <!-- Comments -->
+            <div>
+                <label for="comments" class="block font-bold mb-3">Comments</label>
+                <textarea id="comments" pInputTextarea formControlName="comments" rows="4" class="w-full"
+                    required></textarea>
+            </div>
+
+
+            <!-- Score -->
+            <div>
+                <label for="score" class="block font-bold mb-3">Score (0 to 5)</label>
+                <input id="score" type="number" pInputText formControlName="score" min="0" max="5" step="0.1"
+                    class="w-full">
+            </div>
+
+            <!-- Period Type -->
+            <div>
+                <label for="periodType" class="block font-bold mb-3">Period Type</label>
+                <p-dropdown id="periodType" [options]="periodTypes" placeholder="Select Period"
+                    formControlName="periodType" class="w-full">
+                </p-dropdown>
+            </div>
+
+            <!-- Submit -->
+            <div class="flex justify-end gap-2 pt-4">
+                <button pButton type="button" label="Save" icon="pi pi-check" (click)="submit()"
+                    [disabled]="evaluationForm.invalid"></button>
+            </div>
+        </div>
+
+    </div>
+
+</form>

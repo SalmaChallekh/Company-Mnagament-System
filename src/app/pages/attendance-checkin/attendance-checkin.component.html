@@ -1,0 +1,35 @@
+<p-toast></p-toast>
+
+<p-card header="Camera Check-In" styleClass="p-mb-4">
+    <div class="p-fluid grid">
+
+        <!-- Webcam Section -->
+        <div class="col-12 md:col-6">
+            <webcam [trigger]="triggerObservable" (imageCapture)="handleImage($event)" class="p-mb-3"></webcam>
+
+            <div class="p-d-flex p-jc-between p-mt-2">
+                <button pButton type="button" icon="pi pi-camera" label="Capture" (click)="triggerSnapshot()"
+                    class="p-button-sm p-button-primary"></button>
+                <button *ngIf="webcamImage" pButton type="button" icon="pi pi-check" label="Send" (click)="sendImage()"
+                    class="p-button-sm p-button-success"></button>
+            </div>
+
+            <div *ngIf="webcamImage" class="p-mt-3">
+                <p class="p-text-bold">Preview:</p>
+                <img [src]="webcamImage.imageAsDataUrl" class="p-shadow-2"
+                    style="max-width: 100%; height: auto; border-radius: 8px;" />
+            </div>
+        </div>
+
+        <!-- File Upload Section -->
+        <div class="col-12 md:col-6">
+            <p-fileUpload name="image" mode="basic" accept="image/*" chooseLabel="Upload from Device"
+                (onSelect)="onFileSelected($event)" class="p-mb-2"></p-fileUpload>
+
+            <button pButton type="button" label="Check In" icon="pi pi-upload" (click)="upload()"
+                class="p-button-secondary"></button>
+        </div>
+    </div>
+
+    <p-message *ngIf="responseMessage" severity="success" text="{{ responseMessage }}" class="p-mt-3"></p-message>
+</p-card>

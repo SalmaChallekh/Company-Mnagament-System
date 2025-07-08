@@ -21,6 +21,9 @@ export class DepartmentService {
     getAllDepartments(): Observable<Department[]> {
         return this.http.get<Department[]>(`${this.apiUrl}/getAll`, { headers: this.getHeaders() });
     }
+    getDepartmentDistribution(): Observable<{[key: string]: number}> {
+    return this.http.get<{[key: string]: number}>(`${this.apiUrl}/distribution`,{ headers: this.getHeaders() });
+    }
 
     getDepartmentById(id: number): Observable<Department> {
         return this.http.get<Department>(`${this.apiUrl}/getById/${id}`, { headers: this.getHeaders() });

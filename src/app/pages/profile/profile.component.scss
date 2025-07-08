@@ -1,0 +1,9 @@
+.card {
+  max-width: 400px;        /* largeur max */
+  margin: 40px auto;       /* centre horizontalement + marge en haut/bas */
+  padding: 20px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  border-radius: 10px;
+  background-color: white;
+  text-align: center;      /* centre le texte */
+}

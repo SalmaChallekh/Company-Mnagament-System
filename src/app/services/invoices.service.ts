@@ -22,6 +22,20 @@ export class InvoicesService {
             headers: this.getHeaders()
         });
     }
+    updateInvoice(invoice: any){
+    return this.http.put(`${this.apiUrl}/update/${invoice.id}`, invoice, {
+        headers: this.getHeaders()
+    });
+}
+
+deleteInvoice(invoice: any) {
+    console.log('Invoice to delete:', invoice);
+
+    return this.http.delete(`${this.apiUrl}/delete/${invoice.id}`, {
+
+        headers: this.getHeaders()
+    });
+}
     // Helper method for headers
     private getHeaders(): HttpHeaders {
         const token = localStorage.getItem('token');

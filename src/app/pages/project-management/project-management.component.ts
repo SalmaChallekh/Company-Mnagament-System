@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { TableModule } from 'primeng/table';
+import { Table, TableModule } from 'primeng/table';
 import { TagModule } from 'primeng/tag';
 import { ButtonModule } from 'primeng/button';
 import { ToolbarModule } from 'primeng/toolbar';
@@ -18,6 +18,7 @@ import { ProjectService } from '../../services/project.service';
 import { RippleModule } from 'primeng/ripple';
 import { SelectButtonModule } from 'primeng/selectbutton';
 import { TextareaModule } from 'primeng/textarea';
+import { Router } from '@angular/router';
 
 @Component({
     selector: 'app-project-management',
@@ -50,7 +51,7 @@ export class ProjectManagementComponent implements OnInit {
     submitted: boolean = false;
     editMode: boolean = false;
     projects: any[] = [];
-
+    selectedProjects: any[] = [];
     statusOptions = [
         { label: 'Planned', value: 'PLANNED' },
         { label: 'In Progress', value: 'IN_PROGRESS' },
@@ -73,7 +74,8 @@ export class ProjectManagementComponent implements OnInit {
     constructor(
         private projectService: ProjectService,
         private messageService: MessageService,
-        private confirmationService: ConfirmationService
+        private confirmationService: ConfirmationService,
+        private router: Router
     ) { }
 
     ngOnInit(): void {
@@ -90,6 +92,9 @@ export class ProjectManagementComponent implements OnInit {
                 life: 3000
             })
         });
+    }
+    goToGantt() {
+        this.router.navigate(['/gantt']);
     }
 
     openNew() {
@@ -242,4 +247,8 @@ export class ProjectManagementComponent implements OnInit {
         this.projectDialog = false;
         this.submitted = false;
     }
+    onGlobalFilter(table: Table, event: Event) {
+        table.filterGlobal((event.target as HTMLInputElement).value, 'contains');
+    }
+
 }

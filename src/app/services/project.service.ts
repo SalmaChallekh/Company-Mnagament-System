@@ -11,7 +11,7 @@ export class ProjectService {
     private apiUrl = 'http://localhost:4003/api/projects';
     private apiUrl2 = 'http://localhost:4002/api/admin/departments';
     private apiUrl3 = 'http://localhost:4001/api/user?role=ROLE_MANAGER';
-
+    private baseUrl='http://localhost:4003/api/'
     constructor(private http: HttpClient) { }
 
     private getAuthHeaders(): HttpHeaders {
@@ -88,7 +88,7 @@ export class ProjectService {
     }
 
     getTasksByProjectId(projectId: string): Observable<any[]> {
-        return this.http.get<any[]>(`${this.apiUrl}/${projectId}/tasks`);
+        return this.http.get<any[]>(`${this.baseUrl}/tasks/${projectId}`);
     }
 
     deleteProject(id: string): Observable<any> {

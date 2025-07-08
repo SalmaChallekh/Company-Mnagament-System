@@ -142,42 +142,47 @@ interface RoleOption {
 
 <p-dialog [(visible)]="userDialog" [style]="{ width: '550px' }" header="User Details" [modal]="true">
   <ng-template #content>
-    <div class="flex flex-col gap-6">
-      <div>
-        <label for="email" class="block font-bold mb-3">Email</label>
-        <input type="email" pInputText id="email" [(ngModel)]="user.email" required />
+    <!-- Centering wrapper -->
+    <div class="flex justify-center items-center min-h-[300px]">
+      <!-- Form content -->
+      <div class="flex flex-col gap-6 w-full max-w-md">
+        <div>
+          <label for="email" class="block font-bold mb-3">Email</label>
+          <input type="email" pInputText id="email" [(ngModel)]="user.email" required class="w-full" />
+        </div>
+
+        <div>
+          <label for="department" class="block font-bold mb-3">Department</label>
+          <p-dropdown
+            [options]="departmentOptions"
+            [(ngModel)]="user.departmentId"
+            optionLabel="name"
+            optionValue="id"
+            placeholder="Select Department"
+            inputId="department"
+            appendTo="body"
+            [autoZIndex]="true"
+            [baseZIndex]="1000"
+            class="w-full"
+          ></p-dropdown>
+        </div>
+
+        <div *ngIf="roles?.length">
+          <label for="role" class="block font-bold mb-3">Role</label>
+          <p-dropdown
+            [options]="roles"
+            [(ngModel)]="user.role"
+            placeholder="Select Role"
+            inputId="role"
+            optionLabel="label"
+            optionValue="value"
+            appendTo="body"
+            [autoZIndex]="true"
+            [baseZIndex]="1000"
+            class="w-full"
+          ></p-dropdown>
+        </div>
       </div>
-
-      <div>
-        <label for="department" class="block font-bold mb-3">Department</label>
-        <p-dropdown
-          [options]="departmentOptions"
-          [(ngModel)]="user.departmentId"
-          optionLabel="name"
-          optionValue="id"
-          placeholder="Select Department"
-          inputId="department"
-          appendTo="body"
-          [autoZIndex]="true"
-          [baseZIndex]="1000"
-        ></p-dropdown>
-      </div>
-
-      <div *ngIf="roles?.length">
-  <label for="role" class="block font-bold mb-3">Role</label>
-  <p-dropdown
-    [options]="roles"
-    [(ngModel)]="user.role"
-    placeholder="Select Role"
-    inputId="role"
-    optionLabel="label"
-    optionValue="value"
-    appendTo="body"
-    [autoZIndex]="true"
-    [baseZIndex]="1000"
-  ></p-dropdown>
-</div>
-
     </div>
   </ng-template>
 
@@ -186,6 +191,7 @@ interface RoleOption {
     <p-button label="Save" icon="pi pi-check" (click)="saveUser()" />
   </ng-template>
 </p-dialog>
+
 
 <p-confirmDialog [style]="{ width: '450px' }"></p-confirmDialog>
 
@@ -309,19 +315,38 @@ export class UserManagementComponent implements OnInit {
         this.userDialog = false;
         this.submitted = false;
     }
-
     deleteUser(user: User) {
-        this.confirmationService.confirm({
-            message: `Are you sure you want to delete ${user.email}?`,
-            header: 'Confirm',
-            icon: 'pi pi-exclamation-triangle',
-            accept: () => {
-                this.users.set(this.users().filter((u) => u.id !== user.id));
-                this.showSuccess('User deleted successfully');
-                // Optionally, call backend delete API here
-            },
-        });
-    }
+    this.confirmationService.confirm({
+        message: `Are you sure you want to delete ${user.email}?`,
+        header: 'Confirm',
+        icon: 'pi pi-exclamation-triangle',
+        accept: () => {
+            if (user.id) {
+                this.userService.deleteUser(user.id).subscribe({
+                    next: () => {
+                        this.showSuccess('User deleted successfully');
+                        this.loadUsers();
+                    },
+                    error: () => this.showError('Failed to delete user'),
+                });
+            }
+        },
+    });
+}
+
+
+    // deleteUser(user: User) {
+    //     this.confirmationService.confirm({
+    //         message: `Are you sure you want to delete ${user.email}?`,
+    //         header: 'Confirm',
+    //         icon: 'pi pi-exclamation-triangle',
+    //         accept: () => {
+    //             this.users.set(this.users().filter((u) => u.id !== user.id));
+    //             this.showSuccess('User deleted successfully');
+    //             // Optionally, call backend delete API here
+    //         },
+    //     });
+    // }
 
     getSeverity(enabled: boolean | number): 'success' | 'danger' | 'info' | undefined {
         if (enabled === true || enabled === 1) return 'success';
@@ -334,38 +359,80 @@ export class UserManagementComponent implements OnInit {
         if (enabled === false || enabled === 0) return 'Inactive';
         return 'Unknown';
     }
-
     saveUser() {
-        this.submitted = true;
+    this.submitted = true;
 
-        if (!this.user.email.trim()) {
-            this.showError('Email is required.');
-            return;
-        }
-        if (!this.user.role) {
-            this.showError('Role is required.');
-            return;
-        }
-        if (!this.user.departmentId || this.user.departmentId === 0) {
-            this.showError('Department is required.');
-            return;
-        }
+    if (!this.user.email.trim()) {
+        this.showError('Email is required.');
+        return;
+    }
+    if (!this.user.role) {
+        this.showError('Role is required.');
+        return;
+    }
+    if (!this.user.departmentId || this.user.departmentId === 0) {
+        this.showError('Department is required.');
+        return;
+    }
 
-        const request: CreateUserRequest = {
-            email: this.user.email.trim(),
-            role: this.user.role,
-            departmentId: this.user.departmentId,
-        };
+    const request: CreateUserRequest = {
+        email: this.user.email.trim(),
+        role: this.user.role,
+        departmentId: this.user.departmentId,
+    };
 
-        this.userService.createUser(request).subscribe({
-            next: (response) => {
-                this.showSuccess('User saved successfully');
+    if (this.user.id && this.user.id !== 0) {
+        // Update user
+        this.userService.updateUser(this.user.id, request).subscribe({
+            next: () => {
+                this.showSuccess('User updated successfully');
                 this.userDialog = false;
                 this.loadUsers();
             },
-            error: () => this.showError('Failed to save user'),
+            error: () => this.showError('Failed to update user'),
+        });
+    } else {
+        // Create new user
+        this.userService.createUser(request).subscribe({
+            next: () => {
+                this.showSuccess('User created successfully');
+                this.userDialog = false;
+                this.loadUsers();
+            },
+            error: () => this.showError('Failed to create user'),
         });
     }
+}
+
+
+    // saveUser() {
+    //     this.submitted = true;
+    //     if (!this.user.email.trim()) {
+    //         this.showError('Email is required.');
+    //         return;
+    //     }
+    //     if (!this.user.role) {
+    //         this.showError('Role is required.');
+    //         return;
+    //     }
+    //     if (!this.user.departmentId || this.user.departmentId === 0) {
+    //         this.showError('Department is required.');
+    //         return;
+    //     }
+    //     const request: CreateUserRequest = {
+    //         email: this.user.email.trim(),
+    //         role: this.user.role,
+    //         departmentId: this.user.departmentId,
+    //     };
+    //     this.userService.createUser(request).subscribe({
+    //         next: (response) => {
+    //             this.showSuccess('User saved successfully');
+    //             this.userDialog = false;
+    //             this.loadUsers();
+    //         },
+    //         error: () => this.showError('Failed to save user'),
+    //     });
+    // }
 
     private showSuccess(detail: string) {
         this.messageService.add({ severity: 'success', summary: 'Success', detail, life: 3000 });

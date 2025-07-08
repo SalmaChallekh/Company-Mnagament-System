@@ -1,0 +1,103 @@
+<p-toolbar styleClass="mb-6">
+    <ng-template #start>
+        <p-button label="Add Vendor" icon="pi pi-plus" class="mb-3" severity="secondary"
+            (click)="openNewVendor()"></p-button>
+    </ng-template>
+</p-toolbar>
+
+
+<p-table [value]="vendors" [paginator]="true" [rows]="5" responsiveLayout="scroll">
+    <ng-template #caption>
+        <div class="flex items-center justify-between">
+            <h5 class="m-0">Manage Vendors</h5>
+            <p-iconfield>
+                <p-inputicon styleClass="pi pi-search" />
+                <input pInputText type="text" (input)="onGlobalFilter(dt, $event)" placeholder="Search..." />
+            </p-iconfield>
+        </div>
+    </ng-template>
+    <ng-template pTemplate="header">
+        <tr>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Phone</th>
+            <th>Address</th>
+            <th>Category</th>
+            <th>Ratings (Avg)</th>
+            <th>Actions</th>
+        </tr>
+    </ng-template>
+    <ng-template pTemplate="body" let-vendor>
+        <tr>
+            <td>{{ vendor.name }}</td>
+            <td>{{ vendor.email }}</td>
+            <td>{{ vendor.phone }}</td>
+            <td>{{ vendor.address }}</td>
+            <td>{{ vendor.category }}</td>
+            <td>{{ getAverageRating(vendor.ratings) }}</td>
+            <td>
+                <p-button icon="pi pi-pencil" class="mr-2" [rounded]="true" [outlined]="true"
+                    (click)="editVendor(vendor)"></p-button>
+                <p-button icon="pi pi-trash" [rounded]="true" [outlined]="true"
+                    (click)="deleteVendor(vendor)"></p-button>
+            </td>
+        </tr>
+    </ng-template>
+    <p-confirmDialog></p-confirmDialog>
+    <ng-template pTemplate="emptymessage">
+        <tr>
+            <td colspan="8" class="text-center">No Vendors found.</td>
+        </tr>
+    </ng-template>
+</p-table>
+
+<!-- Vendor Dialog -->
+<p-dialog [(visible)]="vendorDialog" [style]="{ width: '550px' }"
+    header="{{ vendor.id ? 'Edit Vendor' : 'New Vendor' }}" [modal]="true" [closable]="false" [baseZIndex]="10000">
+
+    <!-- Content Section -->
+    <ng-template pTemplate="content">
+        <div class="flex justify-center items-center min-h-[200px]">
+            <div class="flex flex-col gap-6 w-full max-w-md">
+
+                <div>
+                    <label for="name" class="block font-bold mb-3">Vendor Name</label>
+                    <input type="text" pInputText id="name" [(ngModel)]="vendor.name" required autofocus
+                        class="w-full" />
+                </div>
+
+                <div>
+                    <label for="email" class="block font-bold mb-3">Email</label>
+                    <input type="email" pInputText id="email" [(ngModel)]="vendor.email" required class="w-full" />
+                </div>
+
+                <div>
+                    <label for="phone" class="block font-bold mb-3">Phone</label>
+                    <input type="number" pInputText id="phone" [(ngModel)]="vendor.phone" required class="w-full" />
+                </div>
+
+                <div>
+                    <label for="address" class="block font-bold mb-3">Address</label>
+                    <input type="text" pInputText id="address" [(ngModel)]="vendor.address" required class="w-full" />
+                </div>
+
+                <div>
+                    <label for="category" class="block font-bold mb-3">Category</label>
+                    <input type="text" pInputText id="category" [(ngModel)]="vendor.category" required class="w-full" />
+                </div>
+
+            </div>
+        </div>
+    </ng-template>
+
+    <!-- Footer Buttons -->
+    <ng-template pTemplate="footer">
+        <div class="flex justify-end gap-2 w-full">
+            <button pButton type="button" label="Cancel" icon="pi pi-times" class="p-button-text"
+                (click)="hideDialog()"></button>
+
+            <button pButton type="button" label="Save" icon="pi pi-check" (click)="saveVendor()"
+                [disabled]="!vendor.name || !vendor.email"></button>
+        </div>
+    </ng-template>
+</p-dialog>

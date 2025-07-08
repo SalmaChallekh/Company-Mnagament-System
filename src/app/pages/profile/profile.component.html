@@ -1,0 +1,28 @@
+<div class="card" style="
+    max-width: 400px;
+    margin: 40px auto;
+    padding: 20px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    border-radius: 10px;
+    background: #fff;
+    text-align: center;
+  ">
+    <h3>User Profile</h3>
+
+    <div class="profile-card" style="margin-bottom: 20px;">
+        <p><strong>Username:</strong> {{ user.username }}</p>
+        <p><strong>Email:</strong> {{ user.email }}</p>
+        <p><strong>Role:</strong> {{ user.role }}</p>
+    </div>
+
+    <p-button label="{{ editingPassword ? 'Cancel' : 'Edit Password' }}" (click)="toggleEditPassword()"></p-button>
+
+    <div *ngIf="editingPassword">
+        <form (ngSubmit)="updatePassword()">
+            <input type="password" [(ngModel)]="newPassword" name="password" placeholder="New Password" required />
+            <button type="submit">Update Password</button>
+        </form>
+    </div>
+
+
+    <p-toast></p-toast>

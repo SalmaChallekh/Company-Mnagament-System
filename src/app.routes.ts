@@ -17,20 +17,46 @@ import { RoleGuard } from './app/guards/role.guard';
 import { Access } from './app/pages/auth/access';
 import { KanbanComponent } from './app/pages/kanban/kanban.component';
 import { CompleteRegistrationComponent } from './app/complete-registration/complete-registration.component';
+import { ProfileComponent } from './app/pages/profile/profile.component';
+import { GanttComponent } from './app/pages/gantt/gantt.component';
+import { WebcamCheckInComponent } from './app/webcam-check-in/webcam-check-in.component';
+import { EvaluationFormComponent } from './app/pages/evaluation/evaluation-form/evaluation-form.component';
+import { VendorListComponent } from './app/pages/vendorl-ist/vendorl-ist.component';
+import { ClientlistComponent } from './app/pages/clientlist/clientlist.component';
+import { CrmDashboardComponent } from './app/crm-dashboard/crm-dashboard.component';
+import { PredictionComponent } from './app/pages/prediction/prediction.component';
+import { PredictionDashboardComponent } from './app/pages/prediction-dashboard/prediction-dashboard.component';
+import { AttendanceCheckinComponent } from './app/pages/attendance-checkin/attendance-checkin.component';
 
 // Routes with Role-Based Access
 export const appRoutes: Routes = [
     { path: '', redirectTo: '/auth/login', pathMatch: 'full' },
     { path: 'auth', loadChildren: () => import('./app/pages/auth/auth.routes') },
+    { path: 'complete-registration', component: CompleteRegistrationComponent },
+    { path: 'crm-dashboard', component: CrmDashboardComponent },
+    { path: 'prrediction', component: PredictionComponent },
+    { path: 'prediction', component: PredictionDashboardComponent },
+    { path: 'profile', component: ProfileComponent },
     {
-        path: 'complete-registration', component: CompleteRegistrationComponent
+        path: 'camera-checkin',
+        loadComponent: () => import('./app/pages/attendance-checkin/attendance-checkin.component')
+            .then(m => m.AttendanceCheckinComponent)
     },
+    {
+        path: 'create-evaluation',
+        component: EvaluationFormComponent
+    },
+
     // App Layout with nested routes
     {
         path: '',
         component: AppLayout,
         children: [
             { path: 'dashboard', component: DashboardsComponent, canActivate: [AuthGuard] },
+            { path: 'clients', component: ClientlistComponent },
+            { path: 'crm-dashboard', component: CrmDashboardComponent },
+            { path: 'invoices', component: InvoiceListComponent },
+            { path: 'vendors', component: VendorListComponent },
 
             // Role-Based Routes
             {
@@ -52,13 +78,15 @@ export const appRoutes: Routes = [
                 data: { role: 'ADMIN' } // Only accessible by Admins
             },
             { path: 'invoices', component: InvoiceListComponent, canActivate: [AuthGuard] },
+            // { path: 'clients', component: InvoiceListComponent, canActivate: [AuthGuard] },
+            // { path: 'vendors', component: InvoiceListComponent, canActivate: [AuthGuard] },
             { path: 'departments', component: DepartmentListComponent, canActivate: [AuthGuard] },
             { path: 'attendance', component: AttendanceCalendarComponent, canActivate: [AuthGuard] },
             { path: 'payroll', component: PayrollListComponent, canActivate: [AuthGuard] },
             { path: 'leave', component: LeaveRequestComponent, canActivate: [AuthGuard] },
             { path: 'reports', component: ReportsComponent, canActivate: [AuthGuard] },
             { path: 'kanban', component: KanbanComponent },
-
+            { path: 'gantt', component: GanttComponent, canActivate: [AuthGuard] },
         ]
     },
 

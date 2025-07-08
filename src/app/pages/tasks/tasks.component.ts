@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { TableModule } from 'primeng/table';
+import { Table, TableModule } from 'primeng/table';
 import { TagModule } from 'primeng/tag';
 import { ButtonModule } from 'primeng/button';
 import { ToolbarModule } from 'primeng/toolbar';
@@ -14,7 +14,7 @@ import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { IconFieldModule } from 'primeng/iconfield';
 import { InputIconModule } from 'primeng/inputicon';
 import { ConfirmationService, MessageService } from 'primeng/api';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { ProjectService } from '../../services/project.service';
 import { TaskService } from '../../services/task.service';
 
@@ -90,7 +90,6 @@ export class TasksComponent implements OnInit {
         { label: 'Not Started', value: 'NOT_STARTED' },
         { label: 'In Progress', value: 'IN_PROGRESS' },
         { label: 'Completed', value: 'COMPLETED' },
-        { label: 'Blocked', value: 'BLOCKED' }
     ];
 
     constructor(
@@ -98,7 +97,8 @@ export class TasksComponent implements OnInit {
         private projectService: ProjectService,
         private messageService: MessageService,
         private confirmationService: ConfirmationService,
-        private route: ActivatedRoute
+        private route: ActivatedRoute,
+        private router: Router
     ) { }
 
     ngOnInit(): void {
@@ -108,11 +108,9 @@ export class TasksComponent implements OnInit {
 
     loadData() {
         this.loading.set(true);
-
         this.projectService.getAllProjects().subscribe({
             next: (projects) => {
                 this.projects = projects;
-
                 if (this.projectId) {
                     this.loadTasksByProject(this.projectId);
                 } else {
@@ -197,6 +195,10 @@ export class TasksComponent implements OnInit {
             projectName: this.projectId ? this.getProjectName(this.projectId) : ''
         };
     }
+    goToKanban() {
+        // Navigate to the Kanban view route
+        this.router.navigate(['/kanban']);
+    }
 
     openNew() {
         this.task = this.emptyTask();
@@ -209,46 +211,47 @@ export class TasksComponent implements OnInit {
     }
 
     saveTask() {
-    this.loading.set(true);
+        this.loading.set(true);
 
-    const taskToSave: any = {
-        ...this.task,
-        startDate: this.formatDate(this.task.startDate),
-        endDate: this.formatDate(this.task.endDate),
-        assignedTo: this.task.assignedTo?.id,
-        projectId: this.task.projectId
-    };
+        const taskToSave: any = {
+            ...this.task,
+            startDate: this.formatDate(this.task.startDate),
+            endDate: this.formatDate(this.task.endDate),
+            assignedTo: this.task.assignedTo?.id,
+            projectId: this.task.projectId
+        };
+        console.log('startDate type:', typeof this.task.startDate, this.task.startDate);
 
-    if (!this.task.id) {
-        delete taskToSave.id; // ✅ prevent sending id: ""
+        if (!this.task.id) {
+            delete taskToSave.id;
+        }
+
+        if (this.task.id) {
+            this.taskService.updateTask(this.task.id, taskToSave).subscribe({
+                next: () => {
+                    this.messageService.add({ severity: 'success', summary: 'Success', detail: 'Task updated successfully', life: 3000 });
+                    this.loadData();
+                    this.taskDialog = false;
+                },
+                error: () => {
+                    this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Failed to update task', life: 3000 });
+                    this.loading.set(false);
+                }
+            });
+        } else {
+            this.taskService.createTask(taskToSave).subscribe({
+                next: () => {
+                    this.messageService.add({ severity: 'success', summary: 'Success', detail: 'Task created successfully', life: 3000 });
+                    this.loadData();
+                    this.taskDialog = false;
+                },
+                error: () => {
+                    this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Failed to create task', life: 3000 });
+                    this.loading.set(false);
+                }
+            });
+        }
     }
-
-    if (this.task.id) {
-        this.taskService.updateTask(this.task.id, taskToSave).subscribe({
-            next: () => {
-                this.messageService.add({ severity: 'success', summary: 'Success', detail: 'Task updated successfully', life: 3000 });
-                this.loadData();
-                this.taskDialog = false;
-            },
-            error: () => {
-                this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Failed to update task', life: 3000 });
-                this.loading.set(false);
-            }
-        });
-    } else {
-        this.taskService.createTask(taskToSave).subscribe({
-            next: () => {
-                this.messageService.add({ severity: 'success', summary: 'Success', detail: 'Task created successfully', life: 3000 });
-                this.loadData();
-                this.taskDialog = false;
-            },
-            error: () => {
-                this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Failed to create task', life: 3000 });
-                this.loading.set(false);
-            }
-        });
-    }
-}
 
 
 
@@ -309,4 +312,8 @@ export class TasksComponent implements OnInit {
     hideDialog() {
         this.taskDialog = false;
     }
+    onGlobalFilter(table: Table, event: Event) {
+            table.filterGlobal((event.target as HTMLInputElement).value, 'contains');
+        }
+
 }

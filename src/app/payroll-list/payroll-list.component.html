@@ -2,108 +2,133 @@
     <p-toast></p-toast>
     <p-confirmDialog></p-confirmDialog>
 
-    <p-toolbar>
-        <div class="p-toolbar-group-start">
-            <button pButton pRipple label="New" icon="pi pi-plus" class="p-button-success mr-2" (click)="openNew()"></button>
-        </div>
-    </p-toolbar>
+    <p-toolbar styleClass="mb-6">
+        <ng-template #start>
+            <div class="flex items-center gap-4 flex-wrap">
+                <p-button label="Add Payroll" icon="pi pi-plus" severity="secondary" class="mr-2"
+                    (click)="openNew()"></p-button>
 
+                <p-calendar [(ngModel)]="selectedMonth" view="month" dateFormat="yy-mm" placeholder="Select Month"
+                    [monthNavigator]="true" [yearNavigator]="true" yearRange="2020:2030" showIcon="true"
+                    inputStyleClass="w-40">
+                </p-calendar>
+
+                <p-button icon="pi pi-download" label="Export CSV" (click)="exportCsv()"
+                    severity="secondary"></p-button>
+            </div>
+        </ng-template>
+
+
+
+    </p-toolbar>
     <p-table [value]="payrolls()" [paginator]="true" [rows]="10" [showCurrentPageReport]="true"
-        currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries" [rowsPerPageOptions]="[10,25,50]"
-        styleClass="p-datatable-gridlines" [tableStyle]="{ 'min-width': '50rem' }" [globalFilterFields]="['employeeName','status']">
+        currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries"
+        [rowsPerPageOptions]="[10,25,50]" styleClass="p-datatable-gridlines" [tableStyle]="{ 'min-width': '50rem' }"
+        [globalFilterFields]="['employeeId','status']">
+
+        <ng-template #caption>
+            <div class="flex items-center justify-between">
+                <h5 class="m-0">Manage payrolls</h5>
+                <p-iconfield>
+                    <p-inputicon styleClass="pi pi-search" />
+                    <input pInputText type="text" (input)="onGlobalFilter(dt, $event)" placeholder="Search..." />
+                </p-iconfield>
+            </div>
+        </ng-template>
 
         <ng-template pTemplate="header">
             <tr>
-                <th>Employee</th>
-                <th>Period</th>
-                <th>Basic Salary</th>
-                <th>Allowances</th>
+                <th>Employee ID</th>
+                <th>Date</th>
+                <th>Base Salary</th>
+                <th>Bonuses</th>
                 <th>Deductions</th>
-                <th>Net Salary</th>
+                <th>Total Salary</th>
                 <th>Status</th>
-                <th>Payment Date</th>
-                <th>Actions</th>
+
             </tr>
         </ng-template>
 
         <ng-template pTemplate="body" let-payroll>
             <tr>
-                <td>{{payroll.employeeName}}</td>
-                <td>{{payroll.periodStart | date}} - {{payroll.periodEnd | date}}</td>
-                <td>{{payroll.basicSalary | currency}}</td>
-                <td>{{payroll.allowances | currency}}</td>
-                <td>{{payroll.deductions | currency}}</td>
-                <td>{{payroll.netSalary | currency}}</td>
+                <td>{{ payroll.employeeId }}</td>
+                <td>{{ payroll.date | date }}</td>
+                <td>{{ payroll.baseSalary | currency:'TND':'symbol':'1.2-2':'fr-TN' }}</td>
+                <td>{{ payroll.bonuses | currency:'TND':'symbol':'1.2-2':'fr-TN' }}</td>
+                <td>{{ payroll.deductions | currency:'TND':'symbol':'1.2-2':'fr-TN' }}</td>
+                <td>{{ payroll.totalSalary | currency:'TND':'symbol':'1.2-2':'fr-TN' }}</td>
                 <td>
                     <p-tag [value]="payroll.status" [severity]="getSeverity(payroll.status)"></p-tag>
-                </td>
-                <td>{{payroll.paymentDate | date}}</td>
-                <td>
-                    <button pButton pRipple icon="pi pi-pencil" class="p-button-rounded p-button-success mr-2"
-                        (click)="editPayroll(payroll)"></button>
-                    <button pButton pRipple icon="pi pi-trash" class="p-button-rounded p-button-danger"
-                        (click)="deletePayroll(payroll)"></button>
                 </td>
             </tr>
         </ng-template>
     </p-table>
 </div>
 
-<p-dialog [(visible)]="payrollDialog" [style]="{width: '450px'}" header="Payroll Details" [modal]="true">
-    <form *ngIf="payroll" (ngSubmit)="savePayroll()">
-        <div class="p-fluid">
-            <div class="p-field">
-                <label for="employeeName">Employee Name</label>
-                <input pInputText id="employeeName" [(ngModel)]="payroll.employeeName" name="employeeName" required />
-            </div>
+<p-dialog [(visible)]="payrollDialog" [style]="{ width: '550px' }" header="Payroll Details" [modal]="true"
+    [closable]="false" [baseZIndex]="10000">
 
-            <div class="p-field">
-                <label for="periodStart">Period Start</label>
-                <p-calendar id="periodStart" [(ngModel)]="payroll.periodStart" name="periodStart" [showIcon]="true" required></p-calendar>
-            </div>
+    <ng-template pTemplate="content">
+        <div class="flex justify-center items-center min-h-[200px]">
+            <div class="flex flex-col gap-6 w-full max-w-md">
+                <form *ngIf="payroll" (ngSubmit)="savePayroll()" class="w-full">
 
-            <div class="p-field">
-                <label for="periodEnd">Period End</label>
-                <p-calendar id="periodEnd" [(ngModel)]="payroll.periodEnd" name="periodEnd" [showIcon]="true" required></p-calendar>
-            </div>
+                    <div>
+                        <label for="employeeId" class="block font-bold mb-3">Employee ID</label>
+                        <input pInputText id="employeeId" [(ngModel)]="payroll.employeeId" name="employeeId" required
+                            autofocus class="w-full" />
+                    </div>
 
-            <div class="p-field">
-                <label for="basicSalary">Basic Salary</label>
-                <p-inputNumber id="basicSalary" [(ngModel)]="payroll.basicSalary" name="basicSalary" mode="currency" currency="USD" locale="en-US"
-                    (onInput)="calculateNetSalary()"></p-inputNumber>
-            </div>
+                    <div>
+                        <label for="date" class="block font-bold mb-3">Date</label>
+                        <p-calendar id="date" [(ngModel)]="payroll.date" name="date" [showIcon]="true" required
+                            class="w-full"></p-calendar>
+                    </div>
 
-            <div class="p-field">
-                <label for="allowances">Allowances</label>
-                <p-inputNumber id="allowances" [(ngModel)]="payroll.allowances" name="allowances" mode="currency" currency="USD" locale="en-US"
-                    (onInput)="calculateNetSalary()"></p-inputNumber>
-            </div>
+                    <div>
+                        <label for="baseSalary" class="block font-bold mb-3">Base Salary</label>
+                        <p-inputNumber id="baseSalary" [(ngModel)]="payroll.baseSalary" name="baseSalary"
+                            mode="currency" currency="TND" locale="fr-TN" (onInput)="calculateTotalSalary()"
+                            class="w-full"></p-inputNumber>
+                    </div>
 
-            <div class="p-field">
-                <label for="deductions">Deductions</label>
-                <p-inputNumber id="deductions" [(ngModel)]="payroll.deductions" name="deductions" mode="currency" currency="USD" locale="en-US"
-                    (onInput)="calculateNetSalary()"></p-inputNumber>
-            </div>
+                    <div>
+                        <label for="bonuses" class="block font-bold mb-3">Bonuses</label>
+                        <p-inputNumber id="bonuses" [(ngModel)]="payroll.bonuses" name="bonuses" mode="currency"
+                            currency="TND" locale="fr-TN" (onInput)="calculateTotalSalary()"
+                            class="w-full"></p-inputNumber>
+                    </div>
 
-            <div class="p-field">
-                <label for="netSalary">Net Salary</label>
-                <p-inputNumber id="netSalary" [(ngModel)]="payroll.netSalary" name="netSalary" mode="currency" currency="USD" locale="en-US" [readonly]="true"></p-inputNumber>
-            </div>
+                    <div>
+                        <label for="deductions" class="block font-bold mb-3">Deductions</label>
+                        <p-inputNumber id="deductions" [(ngModel)]="payroll.deductions" name="deductions"
+                            mode="currency" currency="TND" locale="fr-TN" (onInput)="calculateTotalSalary()"
+                            class="w-full"></p-inputNumber>
+                    </div>
 
-            <div class="p-field">
-                <label for="status">Status</label>
-                <p-dropdown id="status" [options]="statuses" [(ngModel)]="payroll.status" name="status" optionLabel="label" optionValue="value"></p-dropdown>
-            </div>
+                    <div>
+                        <label for="totalSalary" class="block font-bold mb-3">Total Salary</label>
+                        <p-inputNumber id="totalSalary" [(ngModel)]="payroll.totalSalary" name="totalSalary"
+                            mode="currency" currency="TND" locale="fr-TN" [readonly]="true"
+                            class="w-full"></p-inputNumber>
+                    </div>
 
-            <div class="p-field" *ngIf="payroll.status === 'PAID'">
-                <label for="paymentDate">Payment Date</label>
-                <p-calendar id="paymentDate" [(ngModel)]="payroll.paymentDate" name="paymentDate" [showIcon]="true"></p-calendar>
+                    <div>
+                        <label for="status" class="block font-bold mb-3">Status</label>
+                        <p-dropdown id="status" [options]="statuses" [(ngModel)]="payroll.status" name="status"
+                            optionLabel="label" optionValue="value" class="w-full"></p-dropdown>
+                    </div>
+
+                </form>
             </div>
         </div>
+    </ng-template>
 
-        <div class="p-dialog-footer">
-            <button pButton pRipple type="button" label="Cancel" icon="pi pi-times" class="p-button-text" (click)="payrollDialog = false"></button>
-            <button pButton pRipple type="submit" label="Save" icon="pi pi-check" class="p-button-text"></button>
+    <ng-template pTemplate="footer">
+        <div class="flex justify-end gap-2 w-full">
+            <button pButton type="button" label="Cancel" icon="pi pi-times" class="p-button-text"
+                (click)="payrollDialog = false"></button>
+            <button pButton type="button" label="Save" icon="pi pi-check" (click)="savePayroll()"></button>
         </div>
-    </form>
+    </ng-template>
 </p-dialog>
